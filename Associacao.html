@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONCEITOS EM LIBRAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* [ESTILOS LIBRAS ESSENCIAL - COPIADO DE SOLETRAÇÃO] */
+        :root {
+            --jw-green: #449D44; 
+            --jw-red: #C9302C; 
+            --jw-background: #F0F0EE; 
+            --jw-dark: #333333; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--jw-background); 
+            min-height: 100vh;
+        }
+        
+        #activity-header {
+            background-color: var(--jw-dark);
+            height: 50px; 
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .home-button {
+            color: white;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .home-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #score-display-minimal {
+            margin-left: auto;
+            margin-right: 0; 
+        }
+
+        /* Barra de Progresso */
+        #progress-bar-container {
+            height: 5px;
+            width: 100%;
+            background-color: #E0E0E0; 
+            position: sticky; 
+            top: 50px;
+            z-index: 49;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%; 
+            background-color: var(--jw-green); 
+            transition: width 0.3s ease-out;
+        }
+        
+        .jw-button-primary {
+            background-color: var(--jw-green);
+            color: white;
+            border: 1px solid var(--jw-green);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        .jw-button-secondary {
+            background-color: white;
+            color: var(--jw-green);
+            border: 1px solid var(--jw-green);
+        }
+        .jw-button-secondary:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* --- ESTILOS ESPECÍFICOS DOS MODOS --- */
+        
+        /* Contêiner da Carta (Modo 4 e 6) */
+        .match-card {
+            background-color: white;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            perspective: 1000px;
+            aspect-ratio: 1 / 1; 
+            height: auto;
+            transition: border-color 0.3s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Efeito de 3D (Modo 4) */
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        /* Vira a carta (Modo 4) */
+        .match-card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        /* Face frontal (capa) e traseira (conteúdo) (Modo 4) */
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .card-front {
+            background-color: var(--jw-dark); 
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card-back {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            transform: rotateY(180deg);
+        }
+
+        /* Cartas abertas (Modo 6) */
+        .match-card.open-card {
+            border: 2px solid #d1d5db; 
+            padding: 8px;
+            background-color: #f3f4f6;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-content-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        /* Efeitos de Match e Erro */
+        .match-card.matched, .match-card.mode6-matched {
+            pointer-events: none; 
+            opacity: 0.5;
+            transition: opacity 0.6s ease-in-out;
+            background-color: #D4EDDA !important; 
+        }
+        .match-card.error, .match-card.mode6-error {
+            border-color: var(--jw-red) !important;
+            box-shadow: 0 0 10px rgba(201, 48, 44, 0.7);
+        }
+        .match-card.correct, .match-card.mode6-correct {
+            border-color: var(--jw-green) !important;
+            box-shadow: 0 0 10px rgba(68, 157, 68, 0.7);
+        }
+        .match-card.mode6-selected {
+            border-color: var(--jw-dark) !important;
+            box-shadow: 0 0 10px rgba(51, 51, 51, 0.7);
+        }
+
+    </style>
+</head>
+<body>
+    
+    <header id="activity-header">
+        
+        <div class="font-bold text-xl">
+            LIBRAS - <span class="italic">Sessões de Treino</span>
+        </div>
+        
+        <a href="#" onclick="alert('Voltando ao Menu Principal!')" class="home-button ml-auto mr-8" title="Menu Principal">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-10v10a1 1 0 001 1h3M12 12v10"/>
+            </svg>
+        </a>
+
+        <div id="score-display-minimal" class="bg-white p-1 rounded text-sm font-bold shadow hidden">
+            <span id="score-correct" style="color: var(--jw-green);" class="mr-1">0</span>
+            <span id="score-wrong" style="color: var(--jw-red);">0</span>
+        </div>
+    </header>
+
+    <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="p-6 md:p-10 rounded-xl shadow-2xl bg-white"> 
+            
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-6">Combinações em LIBRAS</h2>
+            
+            <div class="flex flex-wrap justify-center space-x-4 mb-8">
+                <button id="mode4-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-primary mb-2">
+                    Modo 4: Associação (Memória)
+                </button>
+                <button id="mode5-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-secondary mb-2">
+                    Modo 5: Leitura Rápida
+                </button>
+                <button id="mode6-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-secondary mb-2">
+                    Modo 6: Associação Direta
+                </button>
+            </div>
+            
+            <div id="feedback-message" class="text-center font-bold text-lg p-3 rounded-lg hidden"></div>
+
+            <div id="mode4-container" class="text-center">
+                <h3 class="text-xl font-bold mb-6 text-gray-800">Modo 4: Encontre os Pares Correspondentes (Sinal ↔ Foto Conceito). (10 Pares)</h3>
+                
+                <div id="matching-board-4" class="grid grid-cols-4 md:grid-cols-5 gap-4 mx-auto max-w-6xl">
+                    </div>
+            </div>
+
+            <div id="mode5-container" class="text-center mt-12 hidden">
+                <h3 class="text-xl font-bold mb-6 text-gray-800">Modo 5: Qual é a Palavra? (10 Rodadas)</h3>
+                
+                <div class="max-w-lg mx-auto p-4 bg-gray-100 rounded-lg shadow-inner">
+                    
+                    <p class="text-lg font-semibold mb-4 text-gray-700">Observe o(s) sinal(ais) e escolha a palavra correspondente:</p>
+
+                    <div class="mb-6 p-4 bg-white rounded-lg shadow-md">
+                        <div id="mode5-sign-container" class="w-full h-40 object-contain mx-auto min-h-[10rem] flex items-center justify-center">
+                            </div>
+                    </div>
+
+                    <div id="mode5-options-container" class="grid grid-cols-2 gap-4">
+                        </div>
+
+                </div>
+            </div>
+
+            <div id="mode6-container" class="text-center mt-12 hidden">
+                <h3 class="text-xl font-bold mb-6 text-gray-800">Modo 6: Associaçao Direta (Sinal ↔ Conceito/Foto). (10 Pares)</h3>
+                
+                <div id="matching-board-6" class="grid grid-cols-4 md:grid-cols-5 gap-4 mx-auto max-w-6xl">
+                    </div>
+            </div>
+
+
+            <div id="end-round-screen" class="text-center mt-12 hidden">
+                <p class="text-lg text-gray-600 mb-2">Você concluiu a rodada!</p>
+                <p class="text-3xl font-extrabold text-gray-900 mb-6" id="end-message-title"></p>
+                
+                <div id="final-score-display" class="bg-white inline-block p-2 rounded text-lg font-bold shadow-md mb-6 border border-gray-300 hidden">
+                    <span id="final-score-correct" style="color: var(--jw-green);" class="mr-2">0</span>
+                    <span id="final-score-wrong" style="color: var(--jw-red);">0</span>
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button id="end-retry-button" class="py-3 px-8 rounded font-bold transition-colors jw-button-primary">
+                        JOGAR NOVAMENTE
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+    
+    <script>
+        // --- BANCO DE DADOS (COM NOMES DE ARQUIVO SANITIZADOS E ESTRUTURA ARRAY) ---
+        
+        const rawWordData = [
+            // Agora, o campo 'sinal' é sempre um array de strings.
+	    { word: 'Ajudar', sinal: ['Ajuda_Sinal.jpg'], foto: 'Ajuda_Foto.jpg' },
+            { word: 'Amor', sinal: ['Amor_Sinal.jpg'], foto: 'Amor_Foto.jpg' },
+            { word: 'Ancião', sinal: ['Ancião_Sinal.jpg'], foto: 'Ancião_Foto.jpg' },
+            { word: 'Bíblia', sinal: ['Bíblia_Sinal.jpg'], foto: 'Bíblia_Foto.jpg' }, 
+            // Palavra Multi-Sinal (Congresso)
+            { word: 'Congresso', sinal: ['Congresso_Sinal_1.jpg', 'Congresso_Sinal_2.jpg'], foto: 'Congresso_Foto.jpg' }, 
+            { word: 'Destruir', sinal: ['Destruir_Sinal.jpg'], foto: 'Destruir_Foto.jpg' },
+            { word: 'Discurso', sinal: ['Discurso_Sinal.jpg'], foto: 'Discurso_Foto.jpg' },
+            { word: 'Fé', sinal: ['Fe_Sinal.jpg'], foto: 'Fe_Foto.jpg' },
+            { word: 'Fome', sinal: ['Fome_Sinal.jpg'], foto: 'Fome_Foto.jpg' },
+            { word: 'Jeová', sinal: ['Jeova_Sinal.jpg'], foto: 'Jeova_Foto.jpg' },
+            { word: 'Jesus', sinal: ['Jesus_Sinal.jpg'], foto: 'Jesus_Foto.jpg' },
+            { word: 'Morte', sinal: ['Morte_Sinal.jpg'], foto: 'Morte_Foto.jpg' },
+            { word: 'Obrigado', sinal: ['Obrigado_Sinal.jpg'], foto: 'Obrigado_Foto.jpg' },
+            { word: 'Por favor', sinal: ['Por_favor_Sinal.jpg'], foto: 'Por_favor_Foto.jpg' }, 
+            { word: 'Pregação', sinal: ['Pregacao_Sinal.jpg'], foto: 'Pregacao_Foto.jpg' },
+            // Palavra Multi-Sinal (Reino de Deus)
+            { word: 'Reino de Deus', sinal: ['Reino_de_Deus_Sinal_1.jpg', 'Reino_de_Deus_Sinal_2.jpg', 'Reino_de_Deus_Sinal_3.jpg'], foto: 'Reino_de_Deus_Foto.jpg' }, 
+            // Palavra Multi-Sinal (Paraiso)
+            { word: 'Paraiso', sinal: ['Paraiso_Sinal_1.jpg', 'Paraiso_Sinal_2.jpg'], foto: 'Paraiso_Foto.jpg' },
+            { word: 'Reunião', sinal: ['Reunião_Sinal.jpg'], foto: 'Reunião_Foto.jpg' },
+            { word: 'Sentinela', sinal: ['Sentinela_Sinal.jpg'], foto: 'Sentinela_Foto.jpg' },
+            { word: 'Servo ministerial', sinal: ['Servo_Ministerial_Sinal.jpg'], foto: 'Servo_Ministerial_Foto.jpg' },
+        ];
+        
+        // Separação de datasets para diferentes modos
+        const allSingleSignWords = rawWordData.filter(item => item.sinal.length === 1);
+        
+        // MODO 4 e 6: 10 palavras com apenas 1 sinal (para simplificar o tabuleiro)
+        const boardGameWords = allSingleSignWords.slice(0, 10); 
+        
+        // --- VARIÁVEIS GLOBAIS DE ESTADO ---
+        let currentMode = 4;
+        const totalRounds = 10; // Objetivo de 10 rodadas/pares para todos os modos
+
+        // Variáveis de Score/Progresso
+        let gameScore = 0; 
+        let gameMistakes = 0; 
+        
+        // Modo 4/6 Shared State
+        let boardGameCards = []; 
+        let lockBoard = false;
+        
+        // Modo 4 State
+        let flippedCards = [];
+        let matchedPairs = 0; 
+        
+        // Modo 5 State
+        let mode5Words = [];
+        let currentWordIndex = 0;
+        let signSlideshowTimer = null; // Timer para o slideshow de sinais
+
+        // Modo 6 State
+        let selectedCardsMode6 = [];
+        let matchedPairsMode6 = 0; 
+
+
+        // --- ELEMENTOS DOM ---
+        const DOM = {
+            feedbackMessage: document.getElementById('feedback-message'),
+            mode4Container: document.getElementById('mode4-container'),
+            mode5Container: document.getElementById('mode5-container'),
+            mode6Container: document.getElementById('mode6-container'),
+            mode4Button: document.getElementById('mode4-button'),
+            mode5Button: document.getElementById('mode5-button'),
+            mode6Button: document.getElementById('mode6-button'),
+            
+            // Score e Progressão
+            progressBar: document.getElementById('progress-bar'),
+            scoreCorrect: document.getElementById('score-correct'),
+            scoreWrong: document.getElementById('score-wrong'),
+            scoreDisplayMinimal: document.getElementById('score-display-minimal'),
+            finalScoreDisplay: document.getElementById('final-score-display'),
+            finalScoreCorrect: document.getElementById('final-score-correct'),
+            finalScoreWrong: document.getElementById('final-score-wrong'),
+            endRoundScreen: document.getElementById('end-round-screen'),
+            endMessageTitle: document.getElementById('end-message-title'),
+            endRetryButton: document.getElementById('end-retry-button'), 
+            
+            // Específicos do Modo 4
+            matchingBoard4: document.getElementById('matching-board-4'),
+
+            // Específicos do Modo 5
+            mode5SignContainer: document.getElementById('mode5-sign-container'), // NOVO CONTAINER
+            mode5OptionsContainer: document.getElementById('mode5-options-container'),
+
+            // Específicos do Modo 6
+            matchingBoard6: document.getElementById('matching-board-6'),
+        };
+
+
+        // --- FUNÇÕES AUXILIARES ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateScoreAndProgress(isMatch = false) {
+            
+            // 1. Atualiza Placar (apenas Modos 5 e 6)
+            if (currentMode === 5 || currentMode === 6) {
+                DOM.scoreCorrect.textContent = gameScore;
+                DOM.scoreWrong.textContent = gameMistakes;
+            }
+
+            // 2. Atualiza Barra de Progresso (todos os modos)
+            let totalCompleted;
+            let roundsGoal;
+
+            // Para M4 e M6, o objetivo é o número de pares (boardGameWords.length = 10)
+            if (currentMode === 4) {
+                totalCompleted = matchedPairs;
+                roundsGoal = boardGameWords.length; 
+            } else if (currentMode === 6) {
+                totalCompleted = matchedPairsMode6;
+                roundsGoal = boardGameWords.length; 
+            } else { // Modo 5
+                totalCompleted = gameScore + gameMistakes;
+                roundsGoal = totalRounds; // É 10
+            }
+            
+            const progress = (totalCompleted / roundsGoal) * 100;
+            DOM.progressBar.style.width = `${progress}%`;
+            
+            // 3. Verifica fim de jogo
+            if (totalCompleted >= roundsGoal) {
+                showEndScreen();
+            }
+        }
+
+        function displayFeedback(message, type = 'success', duration = 2000) {
+            
+            DOM.feedbackMessage.textContent = message;
+            DOM.feedbackMessage.className = 'text-center font-bold text-lg p-3 rounded-lg mt-4 block mx-auto max-w-lg';
+            
+            const root = getComputedStyle(document.documentElement);
+            const successColor = root.getPropertyValue('--jw-green');
+            const errorColor = root.getPropertyValue('--jw-red');
+            
+            if (type === 'success') {
+                DOM.feedbackMessage.style.backgroundColor = successColor;
+                DOM.feedbackMessage.style.color = 'white';
+                DOM.feedbackMessage.style.border = `1px solid ${successColor}`;
+            } else if (type === 'error') {
+                DOM.feedbackMessage.style.backgroundColor = errorColor;
+                DOM.feedbackMessage.style.color = 'white';
+                DOM.feedbackMessage.style.border = `1px solid ${errorColor}`;
+            }
+
+            setTimeout(() => {
+                DOM.feedbackMessage.classList.add('hidden');
+            }, duration);
+        }
+
+        function generateBoardGameData(dataArray, useConceptImage) {
+            let cards = [];
+            let matchIdCounter = 1;
+
+            dataArray.forEach(item => {
+                // Carta 1: SINAL (Apenas o primeiro sinal do array é usado para M4/M6)
+                cards.push({ 
+                    word: item.word, 
+                    type: 'sign', 
+                    matchId: matchIdCounter, 
+                    content: `conceitos/${item.sinal[0]}` // GARANTIA: Usa apenas o primeiro sinal
+                });
+                
+                // Carta 2: CONCEITO (Imagem)
+                if (useConceptImage) {
+                    cards.push({ 
+                        word: item.word, 
+                        type: 'concept_image', 
+                        matchId: matchIdCounter, 
+                        content: `conceitos/${item.foto}` 
+                    });
+                } else {
+                    cards.push({ 
+                        word: item.word, 
+                        type: 'concept_text', 
+                        matchId: matchIdCounter, 
+                        content: item.word 
+                    });
+                }
+                matchIdCounter++;
+            });
+            return shuffleArray(cards);
+        }
+
+        // --- FUNÇÕES DE CONTROLE DE MODO ---
+
+        function resetGameStates() {
+            gameScore = 0;
+            gameMistakes = 0;
+            matchedPairs = 0;
+            matchedPairsMode6 = 0;
+            lockBoard = false;
+            flippedCards = [];
+            selectedCardsMode6 = [];
+            
+            if (signSlideshowTimer) {
+                clearInterval(signSlideshowTimer);
+                signSlideshowTimer = null;
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            resetGameStates();
+            updateScoreAndProgress(); 
+
+            // Oculta tudo
+            DOM.mode4Container.classList.add('hidden');
+            DOM.mode5Container.classList.add('hidden');
+            DOM.mode6Container.classList.add('hidden');
+            DOM.endRoundScreen.classList.add('hidden');
+            DOM.feedbackMessage.classList.add('hidden');
+            DOM.scoreDisplayMinimal.classList.add('hidden');
+            
+            // Botões
+            const allModeButtons = [DOM.mode4Button, DOM.mode5Button, DOM.mode6Button];
+            allModeButtons.forEach(btn => {
+                btn.classList.remove('jw-button-primary');
+                btn.classList.add('jw-button-secondary');
+            });
+
+            // Ativa o modo correto
+            if (mode === 4) {
+                DOM.mode4Container.classList.remove('hidden');
+                DOM.mode4Button.classList.remove('jw-button-secondary');
+                DOM.mode4Button.classList.add('jw-button-primary');
+                setupMode4();
+            } else if (mode === 5) {
+                DOM.mode5Container.classList.remove('hidden');
+                DOM.mode5Button.classList.remove('jw-button-secondary');
+                DOM.mode5Button.classList.add('jw-button-primary');
+                DOM.scoreDisplayMinimal.classList.remove('hidden');
+                setupMode5();
+            } else if (mode === 6) {
+                DOM.mode6Container.classList.remove('hidden');
+                DOM.mode6Button.classList.remove('jw-button-secondary');
+                DOM.mode6Button.classList.add('jw-button-primary');
+                DOM.scoreDisplayMinimal.classList.remove('hidden');
+                setupMode6();
+            }
+        }
+
+        function showEndScreen() {
+            // Limpa qualquer slideshow ativo
+            if (signSlideshowTimer) clearInterval(signSlideshowTimer);
+            
+            // Oculta o container atual
+            DOM.mode4Container.classList.add('hidden');
+            DOM.mode5Container.classList.add('hidden');
+            DOM.mode6Container.classList.add('hidden');
+            DOM.endRoundScreen.classList.remove('hidden');
+            DOM.scoreDisplayMinimal.classList.add('hidden');
+
+            const gameGoal = boardGameWords.length; // 10
+
+            if (currentMode === 4) {
+                DOM.finalScoreDisplay.classList.add('hidden');
+                DOM.endMessageTitle.textContent = `FANTÁSTICO! Você encontrou os ${gameGoal} pares!`;
+            } else {
+                DOM.finalScoreDisplay.classList.remove('hidden');
+                DOM.finalScoreCorrect.textContent = gameScore;
+                DOM.finalScoreWrong.textContent = gameMistakes;
+                
+                let title = `PARABÉNS! Você acertou ${gameScore}`;
+                if (currentMode === 5) {
+                    title += ` de ${totalRounds} rodadas!`; // 10 rodadas
+                } else if (currentMode === 6) {
+                    title += ` de ${gameGoal} pares!`; // 10 pares
+                }
+                DOM.endMessageTitle.textContent = title;
+            }
+
+            // O botão "JOGAR NOVAMENTE" deve chamar o switchMode para resetar o estado.
+            DOM.endRetryButton.onclick = () => {
+                DOM.endRoundScreen.classList.add('hidden');
+                switchMode(currentMode);
+            };
+        }
+
+
+        // --- LÓGICA DO MODO 4: ASSOCIAÇÃO (MEMÓRIA) ---
+        function setupMode4() {
+            matchedPairs = 0;
+            lockBoard = false;
+            flippedCards = [];
+            
+            // Usa Imagem do Sinal (primeiro elemento) + Imagem do Conceito
+            boardGameCards = generateBoardGameData(boardGameWords, true); 
+
+            DOM.matchingBoard4.innerHTML = '';
+            DOM.matchingBoard4.className = "grid grid-cols-4 md:grid-cols-5 gap-4 mx-auto max-w-6xl";
+
+            boardGameCards.forEach((card, index) => {
+                DOM.matchingBoard4.appendChild(createMatchCard4(card, index));
+            });
+            updateScoreAndProgress();
+        }
+        
+        function createMatchCard4(data, index) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'match-card';
+            cardElement.dataset.index = index;
+            cardElement.dataset.matchId = data.matchId;
+            cardElement.dataset.type = data.type; 
+            cardElement.dataset.word = data.word; 
+
+            const inner = document.createElement('div');
+            inner.className = 'card-inner';
+
+            const front = document.createElement('div');
+            front.className = 'card-front';
+            front.textContent = '?'; 
+
+            const back = document.createElement('div');
+            back.className = 'card-back';
+            
+            const content = `<img src="${data.content}" alt="${data.word}" class="card-content-img">`;
+            
+            back.innerHTML = content;
+            
+            // Adiciona um handler de erro de imagem
+            const img = back.querySelector('img');
+            if(img) img.onerror = () => { 
+                img.style.display = 'none';
+                const errorText = document.createElement('span');
+                errorText.textContent = `FALHA ARQUIVO: ${data.content.split('/').pop()}`;
+                errorText.className = 'text-xs text-red-500 font-bold p-2';
+                back.appendChild(errorText);
+            };
+            
+            inner.appendChild(front);
+            inner.appendChild(back);
+            cardElement.appendChild(inner);
+
+            cardElement.addEventListener('click', () => handleCardClick4(cardElement));
+
+            return cardElement;
+        }
+        
+        function handleCardClick4(cardElement) {
+            if (lockBoard || cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) {
+                return;
+            }
+
+            cardElement.classList.add('flipped');
+            flippedCards.push(cardElement);
+
+            if (flippedCards.length === 2) {
+                lockBoard = true; 
+                checkForMatch4();
+            }
+        }
+        
+        function checkForMatch4() {
+            const [card1, card2] = flippedCards;
+            
+            // Verifica se o matchId é o mesmo E se os tipos (sign vs concept_image) são diferentes
+            const isMatch = card1.dataset.matchId === card2.dataset.matchId && card1.dataset.type !== card2.dataset.type;
+
+            if (isMatch) {
+                handleMatchedPair4(card1, card2);
+            } else {
+                handleMisMatch4(card1, card2);
+            }
+        }
+        
+        function handleMatchedPair4(card1, card2) {
+            card1.classList.add('matched', 'correct');
+            card2.classList.add('matched', 'correct');
+
+            displayFeedback(`PAR CORRETO: ${card1.dataset.word}!`, 'success', 1000);
+
+            matchedPairs++;
+            lockBoard = false;
+            flippedCards = [];
+            
+            updateScoreAndProgress();
+        }
+
+        function handleMisMatch4(card1, card2) {
+            card1.classList.add('error');
+            card2.classList.add('error');
+            
+            displayFeedback('INCORRETO! Tente outro par.', 'error', 2000); 
+
+            setTimeout(() => {
+                card1.classList.remove('flipped', 'error');
+                card2.classList.remove('flipped', 'error');
+                
+                lockBoard = false;
+                flippedCards = [];
+            }, 2000);
+        }
+
+
+        // --- LÓGICA DO MODO 5: LEITURA RÁPIDA (MÚLTIPLA ESCOLHA) ---
+        function setupMode5() {
+            // CRIAÇÃO DO SUBSET: 10 palavras aleatórias do banco completo (incluindo multi-sinais)
+            mode5Words = shuffleArray([...rawWordData]).slice(0, totalRounds);
+            currentWordIndex = 0;
+            loadNextWordMode5();
+        }
+
+        function loadNextWordMode5() {
+            // Limpa o timer do sinal anterior
+            if (signSlideshowTimer) {
+                clearInterval(signSlideshowTimer);
+                signSlideshowTimer = null;
+            }
+
+            if (currentWordIndex >= mode5Words.length || (gameScore + gameMistakes >= totalRounds)) {
+                showEndScreen();
+                return;
+            }
+            
+            const correctWord = mode5Words[currentWordIndex];
+            const signFiles = correctWord.sinal;
+            const signContainer = DOM.mode5SignContainer;
+
+            signContainer.innerHTML = '';
+            signContainer.style.position = 'relative'; // Garante posicionamento absoluto do indicador
+            
+            // Lógica para carregar o(s) sinal(ais)
+            if (signFiles.length === 1) {
+                // Sinal único: carrega a imagem diretamente
+                signContainer.innerHTML = `<img src="conceitos/${signFiles[0]}" alt="Sinal de LIBRAS" class="w-full h-40 object-contain mx-auto border border-gray-300 rounded-md">`;
+            } else {
+                // Múltiplos sinais: slideshow
+                let currentSignIndex = 0;
+                const signImage = document.createElement('img');
+                signImage.className = 'w-full h-40 object-contain mx-auto border border-gray-300 rounded-md transition-opacity duration-300';
+                signContainer.appendChild(signImage);
+                
+                // Indicador de qual sinal está sendo mostrado
+                const indicator = document.createElement('p');
+                // Alteração de posição: Mover para o topo esquerdo com fundo semi-transparente para destaque
+                indicator.className = 'text-xs font-semibold text-gray-800 absolute top-2 left-2 px-2 py-1 bg-white/80 rounded-full shadow-md'; 
+                signContainer.appendChild(indicator);
+                
+                const updateSignImage = () => {
+                    signImage.src = `conceitos/${signFiles[currentSignIndex]}`;
+                    signImage.alt = `${correctWord.word} - Sinal ${currentSignIndex + 1}`;
+                    indicator.textContent = `Sinal ${currentSignIndex + 1} de ${signFiles.length}`;
+
+                    // Cicla para o próximo sinal
+                    currentSignIndex = (currentSignIndex + 1) % signFiles.length; 
+                };
+
+                updateSignImage(); // Mostra o primeiro sinal imediatamente
+                signSlideshowTimer = setInterval(updateSignImage, 1500); // Troca a imagem a cada 1.5s
+            }
+            
+            // Opções de Múltipla Escolha
+            let incorrectOptions = rawWordData
+                .filter(w => w.word !== correctWord.word) 
+                .map(w => w.word);
+            
+            incorrectOptions = shuffleArray(incorrectOptions).slice(0, 3);
+            
+            let options = [correctWord.word, ...incorrectOptions];
+            options = shuffleArray(options);
+
+            DOM.mode5OptionsContainer.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'py-3 px-2 rounded font-bold transition-colors shadow-md jw-button-secondary text-sm';
+                button.onclick = () => checkAnswerMode5(button, option, correctWord.word);
+                DOM.mode5OptionsContainer.appendChild(button);
+            });
+            
+            updateScoreAndProgress();
+        }
+
+        function checkAnswerMode5(clickedButton, selectedWord, correctWord) {
+            // Para o slideshow ao responder
+            if (signSlideshowTimer) {
+                clearInterval(signSlideshowTimer);
+                signSlideshowTimer = null;
+            }
+            
+            Array.from(DOM.mode5OptionsContainer.children).forEach(btn => btn.disabled = true);
+
+            if (selectedWord === correctWord) {
+                clickedButton.classList.remove('jw-button-secondary');
+                clickedButton.classList.add('jw-button-primary');
+                displayFeedback(`CORRETO! ${correctWord}`, 'success', 1000);
+                gameScore++;
+
+                setTimeout(() => {
+                    currentWordIndex++;
+                    loadNextWordMode5();
+                }, 1500);
+
+            } else {
+                clickedButton.classList.remove('jw-button-secondary');
+                clickedButton.classList.add('bg-red-200', 'text-black', 'border-red-500');
+                gameMistakes++;
+                
+                Array.from(DOM.mode5OptionsContainer.children).forEach(btn => {
+                    if (btn.textContent === correctWord) {
+                        btn.classList.remove('jw-button-secondary');
+                        btn.classList.add('jw-button-primary');
+                    }
+                });
+
+                displayFeedback(`INCORRETO! A palavra correta era ${correctWord}.`, 'error', 3000);
+
+                setTimeout(() => {
+                    currentWordIndex++;
+                    loadNextWordMode5();
+                }, 3500);
+            }
+        }
+
+        // --- LÓGICA DO MODO 6: ASSOCIAÇÃO DIRETA (CLICK-TO-MATCH) ---
+        function setupMode6() {
+            selectedCardsMode6 = [];
+            matchedPairsMode6 = 0;
+            
+            // Usa Imagem do Sinal (primeiro elemento) + Imagem do Conceito
+            boardGameCards = generateBoardGameData(boardGameWords, true); 
+
+            DOM.matchingBoard6.innerHTML = '';
+            DOM.matchingBoard6.className = "grid grid-cols-4 md:grid-cols-5 gap-4 mx-auto max-w-6xl";
+
+
+            boardGameCards.forEach((card, index) => {
+                DOM.matchingBoard6.appendChild(createMatchCard6(card, index));
+            });
+            updateScoreAndProgress();
+        }
+        
+        function createMatchCard6(data, index) {
+            const cardElement = document.createElement('div');
+            // Cartas abertas
+            cardElement.className = 'match-card open-card'; 
+            cardElement.dataset.index = index;
+            cardElement.dataset.matchId = data.matchId;
+            cardElement.dataset.type = data.type; 
+            cardElement.dataset.word = data.word; 
+
+            // NOVO: Ambos os tipos (sign e concept_image) são imagens
+            const content = `<img src="${data.content}" alt="${data.word}" class="card-content-img">`;
+            cardElement.innerHTML = content;
+            
+            // Adiciona handler de erro de imagem
+            const img = cardElement.querySelector('img');
+            if(img) img.onerror = () => { 
+                img.style.display = 'none';
+                const errorText = document.createElement('span');
+                errorText.textContent = `FALHA: ${data.content.split('/').pop()}`;
+                errorText.className = 'text-xs text-red-500 font-bold p-2';
+                cardElement.appendChild(errorText);
+            };
+
+            cardElement.addEventListener('click', () => handleCardClick6(cardElement));
+            return cardElement;
+        }
+
+        function handleCardClick6(cardElement) {
+            if (lockBoard || cardElement.classList.contains('mode6-matched')) {
+                return;
+            }
+
+            // Desmarca o cartão se for clicado novamente
+            if (cardElement.classList.contains('mode6-selected')) {
+                cardElement.classList.remove('mode6-selected');
+                selectedCardsMode6 = selectedCardsMode6.filter(card => card !== cardElement);
+                return;
+            }
+
+            // Garante que só se pode selecionar um de cada tipo antes de parear
+            const cardType = cardElement.dataset.type;
+            const hasSameTypeSelected = selectedCardsMode6.some(card => card.dataset.type === cardType);
+
+            if (selectedCardsMode6.length === 1 && hasSameTypeSelected) {
+                // Se já houver um cartão do mesmo tipo selecionado, não permite a seleção
+                displayFeedback(`Selecione o ${cardType === 'sign' ? 'Conceito (Foto)' : 'Sinal'} para parear.`, 'error', 1500);
+                return;
+            }
+
+            if (selectedCardsMode6.length < 2) {
+                cardElement.classList.add('mode6-selected');
+                selectedCardsMode6.push(cardElement);
+            }
+
+            if (selectedCardsMode6.length === 2) {
+                lockBoard = true; 
+                checkForMatch6();
+            }
+        }
+
+        function checkForMatch6() {
+            const [card1, card2] = selectedCardsMode6;
+            
+            // Requisito 1: IDs devem ser iguais
+            const sameId = card1.dataset.matchId === card2.dataset.matchId;
+            // Requisito 2: Tipos devem ser diferentes (um sinal, uma foto conceito)
+            const differentTypes = card1.dataset.type !== card2.dataset.type;
+
+            if (sameId && differentTypes) {
+                handleMatchedPair6(card1, card2);
+            } else {
+                handleMisMatch6(card1, card2);
+            }
+        }
+        
+        function handleMatchedPair6(card1, card2) {
+            card1.classList.remove('mode6-selected');
+            card2.classList.remove('mode6-selected');
+            card1.classList.add('mode6-matched', 'mode6-correct');
+            card2.classList.add('mode6-matched', 'mode6-correct');
+
+            gameScore++;
+            matchedPairsMode6++;
+            displayFeedback(`PAR CORRETO: ${card1.dataset.word}!`, 'success', 1000);
+
+            lockBoard = false;
+            selectedCardsMode6 = [];
+            
+            updateScoreAndProgress();
+        }
+
+        function handleMisMatch6(card1, card2) {
+            card1.classList.remove('mode6-selected');
+            card2.classList.remove('mode6-selected');
+            card1.classList.add('mode6-error');
+            card2.classList.add('mode6-error');
+            gameMistakes++;
+            
+            displayFeedback('INCORRETO! Tente outro par.', 'error', 2000); 
+
+            setTimeout(() => {
+                card1.classList.remove('mode6-error');
+                card2.classList.remove('mode6-error');
+                
+                lockBoard = false;
+                selectedCardsMode6 = [];
+            }, 2000);
+        }
+
+        // --- INICIALIZAÇÃO ---
+
+        function init() {
+            // Event Listeners para alternar modos
+            DOM.mode4Button.onclick = () => switchMode(4);
+            DOM.mode5Button.onclick = () => switchMode(5);
+            DOM.mode6Button.onclick = () => switchMode(6);
+            
+            // Iniciar com o Modo 4 (Associação)
+            switchMode(4);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

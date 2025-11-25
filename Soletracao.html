@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soletrando em LIBRAS - LIBRAS ESSENCIAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* [ESTILOS LIBRAS ESSENCIAL] */
+        :root {
+            --jw-green: #449D44; 
+            --jw-red: #C9302C; 
+            --jw-background: #F0F0EE; 
+            --jw-dark: #333333; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--jw-background); 
+            min-height: 100vh;
+        }
+        
+        /* Cabeçalho da Atividade (Barra escura) */
+        #activity-header {
+            background-color: var(--jw-dark);
+            height: 50px; 
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        /* Botão Casa (Home) */
+        .home-button {
+            color: white;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .home-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Placar no Canto Direito (CORRIGIDO) */
+        #score-display-minimal {
+            margin-left: auto;
+            margin-right: 0; 
+        }
+
+        /* Barra de Progresso */
+        #progress-bar-container {
+            height: 5px;
+            width: 100%;
+            background-color: #E0E0E0; 
+            position: sticky; 
+            top: 50px;
+            z-index: 49;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%; 
+            background-color: var(--jw-green); 
+            transition: width 0.3s ease-out;
+        }
+        
+        /* Estilos de Jogo */
+        .image-option, .letter-image {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border 0.3s; 
+            /* CORREÇÃO IMPORTANTE: Garantir que a imagem NÃO seja cortada */
+            object-fit: contain; 
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Os contêineres de imagem devem ser quadrados para consistência no layout */
+        .grid > div {
+             /* Força aspecto 1:1 para imagens das opções */
+            aspect-ratio: 1 / 1; 
+        }
+        
+        /* Separador de Espaço */
+        .space-separator {
+            width: 30px; 
+            height: 70px; 
+            flex-shrink: 0;
+            background-color: #E0E0E0; 
+            border: 2px solid #D0D0D0;
+            border-radius: 4px;
+        }
+
+        /* Botões */
+        .jw-button-primary {
+            background-color: var(--jw-green);
+            color: white;
+            border: 1px solid var(--jw-green);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        .jw-button-secondary {
+            background-color: white;
+            color: var(--jw-green);
+            border: 1px solid var(--jw-green);
+        }
+        .jw-button-secondary:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Borda de acerto/erro para imagens no campo de opções */
+        .border-jw-green { border-color: var(--jw-green) !important; }
+        .border-jw-red { border-color: var(--jw-red) !important; }
+
+        /* NOVO: Otimização de Quebra de Palavra para Português */
+        .word-display-text {
+            /* Força o navegador a usar as regras de quebra silábica do idioma (definido em lang="pt-BR"). */
+            hyphens: auto; 
+            /* Garante que o texto se alinhe ao centro quando quebrar em várias linhas */
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <header id="activity-header">
+        
+        <div class="font-bold text-xl">
+            LIBRAS - <span class="italic">Sessões de Treino</span>
+        </div>
+        
+        <a href="#" onclick="alert('Voltando ao Menu Principal!')" class="home-button ml-auto mr-8" title="Menu Principal">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-10v10a1 1 0 001 1h3M12 12v10"/>
+            </svg>
+        </a>
+
+        <div id="score-display-minimal" class="bg-white p-1 rounded text-sm font-bold shadow hidden">
+            <span id="score-correct" style="color: var(--jw-green);" class="mr-1">0</span>
+            <span id="score-wrong" style="color: var(--jw-red);">0</span>
+        </div>
+    </header>
+    
+    <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="p-6 md:p-10 rounded-xl shadow-2xl bg-white"> 
+            
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-6">Soletrando em LIBRAS</h2>
+            
+            <div class="flex flex-wrap justify-center space-x-4 mb-8">
+                <button id="mode1-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-secondary mb-2">
+                    Modo 1: Letra -> Imagem
+                </button>
+                <button id="mode2-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-primary mb-2">
+                    Modo 2: Palavra -> Sequência
+                </button>
+                <button id="mode3-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-secondary mb-2">
+                    Modo 3: Livre
+                </button>
+            </div>
+            
+            <div id="feedback-message" class="text-center font-bold text-lg p-3 rounded-lg hidden"></div>
+
+            <div id="mode1-container" class="hidden text-center">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">Qual é a imagem para a letra:</h3>
+                
+                <div class="bg-gray-100 text-gray-800 text-6xl font-extrabold p-6 rounded-xl shadow-lg mb-8 mx-auto inline-block border-2 border-gray-300" style="color: var(--jw-dark);">
+                    <span id="current-letter">?</span>
+                </div>
+
+                <div id="options-container" class="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6 mx-auto max-w-4xl">
+                </div>
+
+                <p id="mode1-hint" class="mt-6 text-sm text-gray-500"></p>
+            </div>
+
+            <div id="mode2-container" class="text-center">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">Soletrar a palavra:</h3>
+                
+                <div class="bg-gray-100 text-gray-800 text-4xl font-extrabold tracking-widest p-6 rounded-xl shadow-lg mb-6 mx-auto border-2 border-gray-300">
+                    <span id="word-to-spell" class="break-words word-display-text"></span>
+                </div>
+
+                <h4 class="text-lg font-semibold mb-2 text-gray-800">Sua Soletração:</h4>
+                <div id="selected-images-container" 
+                     class="flex flex-wrap justify-center items-center p-2 mb-6 bg-gray-100 rounded-lg min-h-[80px] border-dashed border-2 border-gray-300">
+                    <p class="text-gray-500 self-center text-sm" id="placeholder-selection">Clique nas imagens abaixo na ordem correta.</p>
+                </div>
+                
+                <div id="correct-sequence-container" class="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-lg hidden">
+                    <h4 class="font-bold text-yellow-800 mb-2">Sequência Correta:</h4>
+                    <div id="correct-images" class="flex flex-wrap justify-center">
+                        </div>
+                </div>
+
+                <h4 class="text-lg font-semibold mt-8 mb-2 text-gray-800">Opções de Letras:</h4>
+                <div id="letter-options-mode2" class="grid grid-cols-5 sm:grid-cols-8 gap-3 md:gap-4 mx-auto max-w-4xl p-2">
+                    </div>
+            </div>
+
+            <div id="mode3-container" class="hidden text-center">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">Modo 3: Formar Palavra (Livre)</h3>
+                
+                <h4 class="text-lg font-semibold mb-2 text-gray-800">Palavra Formada:</h4>
+                <div class="bg-gray-100 text-gray-800 text-4xl font-extrabold tracking-widest p-6 rounded-xl shadow-lg mb-6 mx-auto border-2 border-gray-300 min-w-[50px]">
+                    <span id="mode3-result-text" class="break-words word-display-text">?</span>
+                </div>
+
+                <h4 class="text-lg font-semibold mb-2 text-gray-800">Sua Sequência:</h4>
+                <div id="mode3-selected-images-container" 
+                     class="flex flex-wrap justify-center items-center p-2 mb-6 bg-gray-100 rounded-lg min-h-[80px] border-dashed border-2 border-gray-300">
+                    <p class="text-gray-500 self-center text-sm" id="mode3-placeholder-selection">Clique nas imagens abaixo para formar uma palavra.</p>
+                </div>
+                
+                <div class="flex justify-center space-x-4 mb-8">
+                    <button id="mode3-see-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-primary">
+                        Ver Palavra
+                    </button>
+                    <button id="mode3-clear-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-secondary">
+                        Limpar
+                    </button>
+                </div>
+
+                <h4 class="text-lg font-semibold mt-8 mb-2 text-gray-800">Opções de Sinais:</h4>
+                <div id="letter-options-mode3" class="grid grid-cols-5 sm:grid-cols-8 gap-3 md:gap-4 mx-auto max-w-4xl p-2">
+                    </div>
+            </div>
+
+
+            <div id="end-round-screen" class="text-center mt-12 hidden">
+                <p class="text-lg text-gray-600 mb-2">Você está progredindo!</p>
+                <p class="text-3xl font-extrabold text-gray-900 mb-6" id="end-message-title">Continue fazendo progresso!</p>
+                
+                <div class="bg-white inline-block p-2 rounded text-lg font-bold shadow-md mb-6 border border-gray-300">
+                    <span id="final-score-correct" style="color: var(--jw-green);" class="mr-2">0</span>
+                    <span id="final-score-wrong" style="color: var(--jw-red);">0</span>
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button id="end-continue-button" class="py-3 px-8 rounded font-bold transition-colors jw-button-secondary">
+                        Continuar
+                    </button>
+                    <button id="end-retry-button" class="py-3 px-8 rounded font-bold transition-colors jw-button-secondary">
+                        Tentar Novamente
+                    </button>
+                    <button id="new-game-button" class="py-3 px-8 rounded font-bold transition-colors jw-button-primary hidden">
+                        NOVO JOGO
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+    
+    <script>
+        // Mapa de Sinais (Alfabeto + NÚMEROS E ORDINAIS ADICIONADOS AQUI)
+        const letterMap = {
+            'A': { file: 'alfabeto/A.jpg', hint: 'Mão fechada, polegar para cima.' },
+            'B': { file: 'alfabeto/B.jpg', hint: 'Palma aberta, dedos juntos, polegar dobrado.' },
+            'C': { file: 'alfabeto/C.jpg', hint: 'Mão em forma de "C".' },
+            'D': { file: 'alfabeto/D.jpg', hint: 'Dedo indicador esticado, formando um círculo com o polegar.' },
+            'E': { file: 'alfabeto/E.jpg', hint: 'Mão fechada, dedos levemente curvados, polegar dentro.' },
+            'F': { file: 'alfabeto/F.jpg', hint: 'Três dedos esticados, indicador e polegar juntos.' },
+            'G': { file: 'alfabeto/G.jpg', hint: 'Mão fechada, indicador para cima, polegar para o lado.' },
+            'H': { file: 'alfabeto/H.jpg', hint: 'Dois dedos esticados (indicador e médio), polegar entre eles, girando.' },
+            'I': { file: 'alfabeto/i.jpg', hint: 'Dedo mínimo esticado, punho fechado.' }, 
+            'J': { file: 'alfabeto/J.jpg', hint: 'Dedo mínimo faz o movimento de um "J".' },
+            'K': { file: 'alfabeto/K.jpg', hint: 'Dedo médio esticado, polegar entre o indicador e o médio.' },
+            'L': { file: 'alfabeto/L.jpg', hint: 'Mão em forma de "L".' },
+            'M': { file: 'alfabeto/M.jpg', hint: 'Três dedos (indicador, médio, anelar) sobre o polegar.' },
+            'N': { file: 'alfabeto/N.jpg', hint: 'Dois dedos (indicador, médio) sobre o polegar.' },
+            'O': { file: 'alfabeto/O.jpg', hint: 'Mão em forma de "O".' },
+            'P': { file: 'alfabeto/P.jpg', hint: 'Parecido com "K", mas inclinado para baixo.' },
+            'Q': { file: 'alfabeto/Q.jpg', hint: 'Mão em forma de "Q", inclinada para baixo.' },
+            'R': { file: 'alfabeto/R.jpg', hint: 'Dois dedos cruzados.' },
+            'S': { file: 'alfabeto/S.jpg', hint: 'Mão fechada, polegar por cima dos dedos.' },
+            'T': { file: 'alfabeto/T.jpg', hint: 'Polegar entre o indicador e o médio, punho fechado.' },
+            'U': { file: 'alfabeto/U.jpg', hint: 'Dois dedos esticados e juntos.' },
+            'V': { file: 'alfabeto/V.jpg', hint: 'Dois dedos esticados e separados (como um "V").' },
+            'W': { file: 'alfabeto/W.jpg', hint: 'Três dedos esticados e separados (como um "W").' },
+            'X': { file: 'alfabeto/X.jpg', hint: 'Dedo indicador curvado (como um gancho).' },
+            'Y': { file: 'alfabeto/Y.jpg', hint: 'Dedo mínimo e polegar esticados.' },
+            'Z': { file: 'alfabeto/Z.jpg', hint: 'Dedo indicador desenha um "Z" no ar.' },
+            // --- NÚMEROS E ORDINAIS ADICIONADOS ---
+            '0': { file: 'numeros/0.jpg', hint: 'Mão fechada, palma virada para a frente.' },
+            '1': { file: 'numeros/1.jpg', hint: 'Dedo indicador esticado (pode ter movimento).' },
+            '2': { file: 'numeros/2.jpg', hint: 'Indicador e médio esticados.' },
+            '3': { file: 'numeros/3.jpg', hint: 'Três dedos esticados (polegar, indicador e médio, ou variação de Libras).' },
+            '4': { file: 'numeros/4.jpg', hint: 'Quatro dedos esticados.' },
+            '5': { file: 'numeros/5.jpg', hint: 'Cinco dedos abertos.' },
+            '6': { file: 'numeros/6.jpg', hint: 'Dedo mínimo e polegar se tocam (ou variação regional).' },
+            '7': { file: 'numeros/7.jpg', hint: 'Dedo anelar e polegar se tocam (ou variação regional).' },
+            '8': { file: 'numeros/8.jpg', hint: 'Dedo médio e polegar se tocam (ou variação regional).' },
+            '9': { file: 'numeros/9.jpg', hint: 'Dedo indicador e polegar se tocam (ou variação regional).' },
+            '1º': { file: 'numeros/1°.jpg', hint: 'Sinal para o primeiro (número 1 com movimento específico).' },
+            '2º': { file: 'numeros/2°.jpg', hint: 'Sinal para o segundo (número 2 com movimento específico).' },
+            '3º': { file: 'numeros/3°.jpg', hint: 'Sinal para o terceiro (número 3 com movimento específico).' },
+            '4º': { file: 'numeros/4°.jpg', hint: 'Sinal para o quarto (número 4 com movimento específico).' }
+        };
+
+        const wordBank = ['CASA', 'LIBRAS', 'ESCOLA', 'FAMILIA', 'AMOR', 'MESA', 'PAZ', 'FELIZ', 'JEOVA', 'TESSALONICENSES', 'APOCALIPSE', 'JESUS', 'REINO', 'ALEGRIA', 'PALAVRA', 'REINO DE DEUS', 'CORPO GOVERNANTE', 'TESTEMUNHAS DE JEOVA', 'GALILEIA', 'SAMARIA', 'JUDEIA', 'NABUCODONOSOR'];
+
+        // Estado do Jogo (RESTAURADO)
+        let currentMode = 2; 
+        let currentLetter = '';
+        let currentWord = '';
+        let correctSequence = [];
+        let selectedSequence = [];
+        let gameScore = 0; 
+        let gameMistakes = 0; 
+        let currentRound = 1;
+        const totalRounds = 10;
+        let mode2MistakeMade = false; 
+        let currentRoundIsActive = false; 
+        let mode3Sequence = []; // ESTADO PARA O MODO 3
+
+        // Elementos DOM (RESTAURADO)
+        const DOM = {
+            mode1Container: document.getElementById('mode1-container'),
+            mode2Container: document.getElementById('mode2-container'),
+            mode1Button: document.getElementById('mode1-button'),
+            mode2Button: document.getElementById('mode2-button'),
+            feedbackMessage: document.getElementById('feedback-message'),
+            letterOptionsMode2: document.getElementById('letter-options-mode2'),
+            selectedImagesContainer: document.getElementById('selected-images-container'),
+            correctSequenceContainer: document.getElementById('correct-sequence-container'),
+            progressBar: document.getElementById('progress-bar'),
+            scoreCorrect: document.getElementById('score-correct'),
+            scoreWrong: document.getElementById('score-wrong'),
+            scoreDisplayMinimal: document.getElementById('score-display-minimal'),
+            endRoundScreen: document.getElementById('end-round-screen'),
+            endContinueButton: document.getElementById('end-continue-button'),
+            endRetryButton: document.getElementById('end-retry-button'),
+            newGameButton: document.getElementById('new-game-button'),
+            endMessageTitle: document.getElementById('end-message-title'),
+            currentLetterDisplay: document.getElementById('current-letter'),
+            mode1OptionsContainer: document.getElementById('options-container'),
+            wordToSpell: document.getElementById('word-to-spell'),
+            mode1Hint: document.getElementById('mode1-hint'),
+            // ADIÇÕES MODO 3
+            mode3Container: document.getElementById('mode3-container'),
+            mode3Button: document.getElementById('mode3-button'),
+            mode3ResultText: document.getElementById('mode3-result-text'),
+            mode3SelectedImagesContainer: document.getElementById('mode3-selected-images-container'),
+            mode3SeeButton: document.getElementById('mode3-see-button'),
+            mode3ClearButton: document.getElementById('mode3-clear-button'),
+            mode3OptionsContainer: document.getElementById('letter-options-mode3'),
+            mode3Placeholder: document.getElementById('mode3-placeholder-selection')
+        };
+
+
+        // Funções Auxiliares (Shuffle, Update Score, Feedback) - RESTAURADO
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function updateScoreDisplay() {
+            DOM.scoreCorrect.textContent = gameScore;
+            DOM.scoreWrong.textContent = gameMistakes;
+            DOM.scoreDisplayMinimal.classList.remove('hidden');
+
+            const totalCompleted = gameScore + gameMistakes;
+            const progress = (totalCompleted / totalRounds) * 100;
+            DOM.progressBar.style.width = `${progress}%`;
+        }
+
+        function displayFeedback(message, type = 'success', duration = 2000) {
+            
+            DOM.feedbackMessage.textContent = message;
+            DOM.feedbackMessage.className = 'text-center font-bold text-lg p-3 rounded-lg mt-4 block mx-auto max-w-lg';
+            
+            if (type === 'success') {
+                DOM.feedbackMessage.style.backgroundColor = 'var(--jw-green)';
+                DOM.feedbackMessage.style.color = 'white';
+                DOM.feedbackMessage.style.border = '1px solid var(--jw-green)';
+            } else if (type === 'error') {
+                DOM.feedbackMessage.style.backgroundColor = 'var(--jw-red)';
+                DOM.feedbackMessage.style.color = 'white';
+                DOM.feedbackMessage.style.border = '1px solid var(--jw-red)';
+            } else if (type === 'info') {
+                DOM.feedbackMessage.style.backgroundColor = '#E0F2FF';
+                DOM.feedbackMessage.style.color = '#0069C0';
+                DOM.feedbackMessage.style.border = '1px solid #90C6FF';
+            }
+
+            setTimeout(() => {
+                DOM.feedbackMessage.classList.add('hidden');
+            }, duration);
+        }
+        
+        // --- Controle de Fluxo do Jogo (RESTAURADO) ---
+        function checkGameEnd() {
+            if (gameScore + gameMistakes >= totalRounds) { 
+                currentRoundIsActive = false;
+                
+                DOM.mode2Container.classList.add('hidden');
+                DOM.mode1Container.classList.add('hidden');
+                DOM.mode3Container.classList.add('hidden'); // Oculta o modo 3
+                DOM.endRoundScreen.classList.remove('hidden');
+                
+                document.getElementById('final-score-correct').textContent = gameScore;
+                document.getElementById('final-score-wrong').textContent = gameMistakes;
+
+                if (gameScore >= totalRounds * 0.8) {
+                    DOM.endMessageTitle.textContent = `PARABÉNS! Você acertou ${gameScore} de ${totalRounds}.`;
+                    DOM.endContinueButton.classList.add('hidden');
+                    DOM.newGameButton.classList.remove('hidden');
+                } else {
+                    DOM.endMessageTitle.textContent = `FIM DA RODADA! Você acertou ${gameScore} de ${totalRounds}.`;
+                    DOM.endContinueButton.classList.remove('hidden'); 
+                    DOM.newGameButton.classList.add('hidden');
+                }
+                
+                DOM.endRetryButton.onclick = startNewGame;
+                DOM.newGameButton.onclick = startNewGame;
+                DOM.endContinueButton.onclick = () => {
+                    currentRound = 1;
+                    DOM.endRoundScreen.classList.add('hidden');
+                    if (currentMode === 1) setupMode1(); else setupMode2();
+                };
+
+                return true;
+            }
+            return false;
+        }
+
+        function nextRound() {
+            if (checkGameEnd()) return;
+
+            currentRound++; 
+
+            if (currentMode === 1) {
+                setupMode1();
+            } else {
+                setupMode2();
+            }
+        }
+
+        function startNewGame() {
+            gameScore = 0;
+            gameMistakes = 0;
+            currentRound = 1;
+            mode2MistakeMade = false;
+            selectedSequence = [];
+            correctSequence = [];
+
+            DOM.endRoundScreen.classList.add('hidden');
+            DOM.feedbackMessage.classList.add('hidden');
+
+            updateScoreDisplay();
+
+            // 
+            if (currentMode === 1) {
+                DOM.mode1Container.classList.remove('hidden');
+                DOM.mode2Container.classList.add('hidden');
+                setupMode1();
+            } else {
+                DOM.mode2Container.classList.remove('hidden');
+                DOM.mode1Container.classList.add('hidden');
+                setupMode2();
+            }
+        }
+
+
+        function createLetterImage(letter, isMode2Option = false) {
+            const container = document.createElement('div');
+            container.className = 'rounded-lg overflow-hidden shadow-md hover:shadow-xl';
+
+            const img = document.createElement('img');
+            img.src = letterMap[letter].file;
+            img.alt = `Letra ${letter} em LIBRAS`;
+            img.dataset.letter = letter;
+            
+            if (isMode2Option) {
+                // Modo 2 - Interação por CLIQUE
+                img.classList.add('letter-image', 'p-1', 'bg-white'); 
+                
+                if (letterMap.hasOwnProperty(letter)) {
+                    img.onclick = (e) => selectLetterForMode2(letter, e.target); 
+                } else {
+                    img.classList.add('pointer-events-none');
+                }
+                
+            } else {
+                // Modo 1 - Interação por CLIQUE
+                img.classList.add('image-option', 'p-1', 'bg-white'); 
+                img.onclick = () => checkMode1Answer(letter);
+            }
+            
+            container.appendChild(img);
+            return container;
+        }
+        
+        // --- Lógica do Modo 1: Letra -> Imagem ---
+        function setupMode1() {
+            currentRoundIsActive = true; 
+            
+            // Agora incluindo números e ordinais no pool de perguntas
+            const availableSigns = Object.keys(letterMap).filter(l => l !== ' ');
+            currentLetter = availableSigns[Math.floor(Math.random() * availableSigns.length)];
+            
+            // PREENCHIMENTO DA LETRA/SINAL EM PORTUGUÊS
+            DOM.currentLetterDisplay.textContent = currentLetter;
+            DOM.mode1Hint.textContent = `Dica: ${letterMap[currentLetter].hint}`;
+
+            let incorrectLetters = shuffleArray(availableSigns.filter(l => l !== currentLetter)).slice(0, 3);
+            let options = shuffleArray([currentLetter, ...incorrectLetters]);
+
+            DOM.mode1OptionsContainer.innerHTML = '';
+            
+            options.forEach(letter => {
+                DOM.mode1OptionsContainer.appendChild(createLetterImage(letter));
+            });
+            
+            document.querySelectorAll('.image-option').forEach(img => img.classList.remove('opacity-50', 'pointer-events-none', 'border-jw-green', 'border-jw-red', 'border-4')); 
+        }
+
+        function checkMode1Answer(selectedLetter) {
+            if (!currentRoundIsActive) return; 
+
+            currentRoundIsActive = false;
+            
+            document.querySelectorAll('.image-option').forEach(img => {
+                img.classList.add('opacity-50', 'pointer-events-none');
+                if (img.dataset.letter === currentLetter) {
+                    img.classList.remove('opacity-50');
+                    img.classList.add('border-4', 'border-jw-green');
+                } else if (img.dataset.letter === selectedLetter) {
+                    img.classList.remove('opacity-50');
+                    img.classList.add('border-4', 'border-jw-red');
+                }
+            });
+
+            if (selectedLetter === currentLetter) {
+                gameScore++;
+                displayFeedback(`CORRETO!`, 'success', 2000); 
+                setTimeout(nextRound, 2000);
+
+            } else {
+                gameMistakes++;
+                displayFeedback(`INCORRETO. A imagem correta é a de ${currentLetter}.`, 'error');
+                setTimeout(nextRound, 4000);
+            }
+            updateScoreDisplay();
+        }
+
+        // --- Lógica do Modo 3 (Nova) ---
+
+        // Função separada para criar imagens do Modo 3
+        function createLetterImageMode3(letter) {
+            const container = document.createElement('div');
+            container.className = 'rounded-lg overflow-hidden shadow-md hover:shadow-xl';
+
+            const img = document.createElement('img');
+            img.src = letterMap[letter].file;
+            img.alt = `Letra ${letter} em LIBRAS`;
+            img.dataset.letter = letter;
+            
+            img.classList.add('letter-image', 'p-1', 'bg-white'); 
+            img.onclick = () => selectLetterForMode3(letter); 
+            
+            container.appendChild(img);
+            return container;
+        }
+        
+        function setupMode3() {
+            // Limpa o estado e as exibições
+            clearMode3Selection();
+            
+            DOM.mode3OptionsContainer.innerHTML = '';
+            
+            // Pega todos os sinais do letterMap e os ordena
+            const allSigns = Object.keys(letterMap).sort((a, b) => {
+                // Tenta uma ordenação alfanumérica simples
+                return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+            });
+
+            allSigns.forEach(letter => {
+                if (letter !== ' ') { // Não adiciona 'espaço' como opção clicável
+                    DOM.mode3OptionsContainer.appendChild(createLetterImageMode3(letter));
+                }
+            });
+        }
+
+        function selectLetterForMode3(letter) {
+            mode3Sequence.push(letter);
+            updateMode3SelectedDisplay(letter);
+        }
+
+        function updateMode3SelectedDisplay(newSign) {
+            // newSign é a letra/sinal que acabou de ser adicionada
+            
+            if (mode3Sequence.length > 0) {
+                DOM.mode3Placeholder.classList.add('hidden');
+            } else {
+                DOM.mode3SelectedImagesContainer.querySelectorAll('.selected-image').forEach(div => div.remove());
+                DOM.mode3Placeholder.classList.remove('hidden');
+                return;
+            }
+
+            if (newSign) {
+                const sign = newSign;
+                
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'p-1 relative selected-image pointer-events-none'; 
+                imgContainer.style.width = '70px'; 
+                imgContainer.style.height = '70px'; 
+                imgContainer.style.flexShrink = '0'; 
+                
+                const img = document.createElement('img');
+                img.src = letterMap[sign].file;
+                img.alt = sign;
+                img.className = 'w-full h-full object-contain rounded shadow-md border-4 border-gray-400';
+                
+                imgContainer.appendChild(img);
+                DOM.mode3SelectedImagesContainer.appendChild(imgContainer);
+            } 
+        }
+
+        function showMode3Result() {
+            const word = mode3Sequence.join('');
+            DOM.mode3ResultText.textContent = word || '?';
+        }
+
+        function clearMode3Selection() {
+            mode3Sequence = [];
+            DOM.mode3ResultText.textContent = '?';
+            // Limpa o container e mostra o placeholder
+            DOM.mode3SelectedImagesContainer.querySelectorAll('.selected-image').forEach(div => div.remove());
+            DOM.mode3Placeholder.classList.remove('hidden');
+        }
+
+
+        // --- Lógica do Modo 2: Palavra -> Sequência ---
+        function setupMode2() {
+            currentRoundIsActive = true; 
+            mode2MistakeMade = false;
+            
+            DOM.correctSequenceContainer.classList.add('hidden');
+            DOM.endRoundScreen.classList.add('hidden');
+
+            selectedSequence = [];
+            correctSequence = [];
+
+            document.getElementById('placeholder-selection').classList.remove('hidden');
+            DOM.selectedImagesContainer.querySelectorAll('.selected-image').forEach(div => div.remove());
+
+            currentWord = shuffleArray(wordBank)[0]; 
+            // PREENCHIMENTO DA PALAVRA EM PORTUGUÊS
+            DOM.wordToSpell.textContent = currentWord;
+            correctSequence = currentWord.split(''); 
+
+            // As opções agora incluirão o alfabeto + números/ordinais, mas o filtro de letras requeridas só pegará letras e o espaço.
+            const requiredLetters = [...new Set(correctSequence.filter(l => l !== ' ' && letterMap.hasOwnProperty(l)))];
+            let optionsLetters = [...requiredLetters];
+            const availableSigns = Object.keys(letterMap).filter(l => l !== ' '); // Usa todos os sinais disponíveis
+
+            while (optionsLetters.length < 8) {
+                const randomSign = availableSigns[Math.floor(Math.random() * availableSigns.length)];
+                if (!optionsLetters.includes(randomSign)) {
+                    optionsLetters.push(randomSign);
+                }
+            }
+            optionsLetters = shuffleArray(optionsLetters);
+
+            DOM.letterOptionsMode2.innerHTML = '';
+            optionsLetters.forEach(letter => {
+                DOM.letterOptionsMode2.appendChild(createLetterImage(letter, true));
+            });
+            
+            document.querySelectorAll('.letter-image')
+                .forEach(img => img.classList.remove('pointer-events-none', 'opacity-50', 'border-4', 'border-jw-green', 'border-jw-red'));
+        }
+        
+        function selectLetterForMode2(letter, imgElement) {
+            if (!currentRoundIsActive) return;
+
+            // [LÓGICA DE ESPAÇO]
+            while (selectedSequence.length < correctSequence.length && correctSequence[selectedSequence.length] === ' ') {
+                selectedSequence.push(' ');
+                updateSelectedSequenceDisplay(' '); 
+            }
+
+            const nextExpectedLetter = correctSequence[selectedSequence.length];
+
+            if (selectedSequence.length >= correctSequence.length) {
+                return;
+            }
+
+            // O código abaixo só é atingido se o próximo caractere for uma LETRA/SINAL e não um ESPAÇO.
+            if (letter === nextExpectedLetter) {
+                selectedSequence.push(letter);
+                
+                imgElement.classList.add('border-4', 'border-jw-green');
+                imgElement.classList.remove('border-jw-red');
+
+                updateSelectedSequenceDisplay(letter); 
+
+                if (selectedSequence.length === correctSequence.length) {
+                    checkMode2Answer();
+                }
+            } else {
+                mode2MistakeMade = true;
+                
+                imgElement.classList.add('border-4', 'border-jw-red');
+                imgElement.classList.remove('border-jw-green');
+
+                displayFeedback(`ERRO! Tente novamente.`, 'error', 1500);
+
+                setTimeout(() => {
+                    imgElement.classList.remove('border-4', 'border-jw-red');
+                }, 1000);
+            }
+        }
+        
+        function updateSelectedSequenceDisplay(newSign = null) {
+            
+            if (selectedSequence.length > 0) {
+                document.getElementById('placeholder-selection').classList.add('hidden');
+            } else {
+                DOM.selectedImagesContainer.querySelectorAll('.selected-image').forEach(div => div.remove());
+                document.getElementById('placeholder-selection').classList.remove('hidden');
+                return;
+            }
+
+            if (newSign) {
+                const sign = newSign;
+
+                if (sign === ' ') {
+                    const spaceContainer = document.createElement('div');
+                    spaceContainer.className = 'p-1 relative selected-image pointer-events-none flex items-center justify-center space-separator shadow-md';
+                    DOM.selectedImagesContainer.appendChild(spaceContainer);
+                } else {
+                    const imgContainer = document.createElement('div');
+                    
+                    // Ajuste de tamanho e layout para ser flexível, mantendo o quadrado
+                    imgContainer.className = 'p-1 relative selected-image pointer-events-none'; 
+                    imgContainer.style.width = '70px'; 
+                    imgContainer.style.height = '70px'; 
+                    imgContainer.style.flexShrink = '0'; 
+                    
+                    const img = document.createElement('img');
+                    img.src = letterMap[sign].file;
+                    img.alt = sign;
+                    // Uso de 'object-contain' para não cortar o sinal, mantendo o aspecto 
+                    img.className = 'w-full h-full object-contain rounded shadow-md border-4 border-gray-400';
+                    
+                    imgContainer.appendChild(img);
+                    DOM.selectedImagesContainer.appendChild(imgContainer);
+                }
+            } 
+        }
+
+        function checkMode2Answer() {
+            currentRoundIsActive = false; 
+            
+            document.querySelectorAll('.letter-image').forEach(img => img.classList.add('pointer-events-none', 'opacity-50'));
+            
+            if (!mode2MistakeMade) {
+                gameScore++;
+                displayFeedback(`CORRETO! Você soletrou ${currentWord} sem erros!`, 'success', 2000);
+                
+                setTimeout(nextRound, 2000);
+
+            } else {
+                gameMistakes++;
+                displayFeedback(`Soletrado com erros. A palavra correta era ${currentWord}.`, 'error');
+                
+                showCorrectSequence();
+                
+                setTimeout(nextRound, 4000);
+            }
+            
+            updateScoreDisplay();
+        }
+        
+        function showCorrectSequence() {
+            const correctImagesContainer = document.getElementById('correct-images');
+            correctImagesContainer.innerHTML = '';
+            
+            correctSequence.forEach(sign => {
+                const imgContainer = document.createElement('div');
+                // Mantém o layout compacto, mas visível
+                imgContainer.className = 'w-1/6 sm:w-1/12 p-1'; 
+                
+                if (sign === ' ') {
+                    const spaceContainer = document.createElement('div');
+                    // Garante que o espaço tenha altura, mesmo que vazio.
+                    spaceContainer.className = 'w-full h-[70px] bg-gray-200 border-4 border-jw-green rounded-lg flex items-center justify-center text-xs font-bold';
+                    imgContainer.appendChild(spaceContainer);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = letterMap[sign].file;
+                    img.alt = sign;
+                    // Uso de 'object-contain' para o sinal ser totalmente visível.
+                    img.className = 'w-full h-full object-contain rounded shadow-md border-4 border-jw-green';
+                    imgContainer.appendChild(img);
+                }
+                
+                correctImagesContainer.appendChild(imgContainer);
+            });
+            
+            DOM.correctSequenceContainer.classList.remove('hidden');
+        }
+
+        // --- Funções de Inicialização e Eventos ---
+        
+        // FUNÇÃO SWITCHMODE ATUALIZADA
+        function switchMode(mode) {
+            currentMode = mode;
+            DOM.feedbackMessage.classList.add('hidden');
+            DOM.correctSequenceContainer.classList.add('hidden');
+            DOM.endRoundScreen.classList.add('hidden');
+            
+            // Ocultar todos os containers
+            DOM.mode1Container.classList.add('hidden');
+            DOM.mode2Container.classList.add('hidden');
+            DOM.mode3Container.classList.add('hidden');
+
+            // Resetar todos os botões para secundário
+            DOM.mode1Button.classList.remove('jw-button-primary');
+            DOM.mode1Button.classList.add('jw-button-secondary');
+            
+            DOM.mode2Button.classList.remove('jw-button-primary');
+            DOM.mode2Button.classList.add('jw-button-secondary');
+            
+            DOM.mode3Button.classList.remove('jw-button-primary');
+            DOM.mode3Button.classList.add('jw-button-secondary');
+            
+            // Ativar o modo correto
+            if (mode === 1) {
+                DOM.mode1Container.classList.remove('hidden');
+                DOM.mode1Button.classList.add('jw-button-primary');
+                startNewGame(); // Modo 1 usa o jogo
+                
+            } else if (mode === 2) {
+                DOM.mode2Container.classList.remove('hidden');
+                DOM.mode2Button.classList.add('jw-button-primary');
+                startNewGame(); // Modo 2 usa o jogo
+
+            } else if (mode === 3) {
+                DOM.mode3Container.classList.remove('hidden');
+                DOM.mode3Button.classList.add('jw-button-primary');
+                setupMode3(); // Modo 3 tem seu próprio setup sem score
+            }
+        }
+
+        // FUNÇÃO INIT ATUALIZADA
+        function init() {
+            // Event Listeners
+            DOM.mode1Button.onclick = () => switchMode(1);
+            DOM.mode2Button.onclick = () => switchMode(2);
+            DOM.mode3Button.onclick = () => switchMode(3); // ADICIONADO
+            
+            DOM.endContinueButton.onclick = () => { currentRound = 1; DOM.endRoundScreen.classList.add('hidden'); if (currentMode === 1) setupMode1(); else setupMode2(); };
+            DOM.endRetryButton.onclick = startNewGame;
+            DOM.newGameButton.onclick = startNewGame;
+
+            // Handlers do Modo 3
+            DOM.mode3SeeButton.onclick = showMode3Result; // ADICIONADO
+            DOM.mode3ClearButton.onclick = clearMode3Selection; // ADICIONADO
+
+            // Iniciar com o Modo 2 (configuração inicial)
+            switchMode(2);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frases em Libras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* [ESTILOS LIBRAS ESSENCIAL - COPIADO DE ASSOCIAÇÃO] */
+        :root {
+            --jw-green: #449D44; 
+            --jw-red: #C9302C; 
+            --jw-background: #F0F0EE; 
+            --jw-dark: #333333; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--jw-background); 
+            min-height: 100vh;
+        }
+        
+        #activity-header {
+            background-color: var(--jw-dark);
+            height: 50px; 
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .home-button {
+            color: white;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .home-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #score-display-minimal {
+            margin-left: auto;
+            margin-right: 0; 
+        }
+
+        /* Barra de Progresso */
+        #progress-bar-container {
+            height: 5px;
+            width: 100%;
+            background-color: #E0E0E0; 
+            position: sticky; 
+            top: 50px;
+            z-index: 49;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%; 
+            background-color: var(--jw-green); 
+            transition: width 0.3s ease-out;
+        }
+        
+        .jw-button-primary {
+            background-color: var(--jw-green);
+            color: white;
+            border: 1px solid var(--jw-green);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        .jw-button-secondary {
+            background-color: white;
+            color: var(--jw-green);
+            border: 1px solid var(--jw-green);
+        }
+        .jw-button-secondary:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* --- ESTILOS ESPECÍFICOS DOS MODOS 7 e 8 --- */
+
+        .sign-token {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 4px; 
+            transition: transform 0.2s, opacity 0.2s, border-color 0.2s;
+            aspect-ratio: 1 / 1; 
+            user-select: none;
+            position: relative;
+        }
+        
+        .sign-token:hover:not(.selected):not(.correct):not(.wrong) {
+            border-color: var(--jw-dark);
+        }
+
+        .sign-token img {
+            max-width: 100%;
+            max-height: 100%; 
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        /* Estilo para Tokens de Texto (Modo 8) */
+        .text-token {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 8px;
+            transition: transform 0.2s, opacity 0.2s, border-color 0.2s;
+            user-select: none;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .text-token:hover {
+            border-color: var(--jw-dark);
+        }
+        #answer-container-m8 .text-token {
+             background-color: #e5e7eb;
+             border-color: #9ca3af;
+        }
+
+        /* Área de Opções */
+        #options-container .sign-token, #options-container-m8 .text-token {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Área de Resposta (Tokens selecionados) */
+        #answer-container .sign-token, #answer-container-m8 .text-token {
+            background-color: #e5e7eb; /* gray-200 */
+            border-color: #9ca3af; /* gray-400 */
+            cursor: default;
+        }
+        
+        /* Feedback Visual */
+        .token-correct, .text-token-correct {
+            border-color: var(--jw-green) !important;
+            box-shadow: 0 0 5px rgba(68, 157, 68, 0.5);
+            pointer-events: none;
+            background-color: #D4EDDA !important; /* light green */
+        }
+        .token-wrong, .text-token-wrong {
+            border-color: var(--jw-red) !important;
+            box-shadow: 0 0 5px rgba(201, 48, 44, 0.5);
+            background-color: #F8D7DA !important; /* light red */
+        }
+        .token-selected {
+            border-color: var(--jw-dark) !important;
+            box-shadow: 0 0 10px rgba(51, 51, 51, 0.7);
+        }
+        
+        /* Estilo para o Token de Instrução/Tracejado */
+        .instruction-token {
+            border: 2px dashed #9ca3af !important;
+            background-color: #fffde7 !important; /* Amarelo pálido */
+            color: #795548;
+            font-size: 0.7rem !important;
+            font-weight: 700;
+            padding: 0;
+            text-shadow: 0 0 1px white;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <header id="activity-header">
+        
+        <div class="font-bold text-xl">
+            LIBRAS - <span class="italic">Sessões de Treino</span>
+        </div>
+        
+        <a href="#" onclick="alert('Voltando ao Menu Principal!')" class="home-button ml-auto mr-8" title="Menu Principal">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-10v10a1 1 0 001 1h3M12 12v10"/>
+            </svg>
+        </a>
+
+        <div id="score-display-minimal" class="bg-white p-1 rounded text-sm font-bold shadow">
+            <span id="score-correct" style="color: var(--jw-green);" class="mr-1">0</span>
+            <span id="score-wrong" style="color: var(--jw-red);">0</span>
+        </div>
+    </header>
+
+    <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="p-6 md:p-10 rounded-xl shadow-2xl bg-white"> 
+            
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-6">Frases em LIBRAS</h2>
+            
+            <div class="flex flex-wrap justify-center space-x-4 mb-8">
+                <button id="mode7-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-primary mb-2">
+                    Modo 7: PT → LIBRAS
+                </button>
+                <button id="mode8-button" class="py-2 px-6 rounded-full font-semibold transition-all shadow-md jw-button-secondary mb-2">
+                    Modo 8: LIBRAS → PT
+                </button>
+            </div>
+            
+            <div id="feedback-message" class="text-center font-bold text-lg p-3 rounded-lg hidden"></div>
+
+            <div id="mode7-container" class="text-center">
+                <h3 class="text-xl font-bold mb-6 text-gray-800">Modo 7: Construa a frase </h3>
+                
+                <div class="max-w-4xl mx-auto p-4 bg-gray-100 rounded-lg shadow-inner">
+                    
+                    <p class="text-xl font-semibold mb-4 text-gray-700">Frase em Português:</p>
+                    <p id="portuguese-phrase" class="text-2xl font-extrabold text-gray-900 mb-8 p-3 bg-white rounded-md shadow-md">
+                        </p>
+
+                    <p class="text-lg font-semibold mb-2 text-gray-700">Sinais (Ordem da LIBRAS):</p>
+                    <div id="answer-container" class="flex flex-wrap justify-center gap-2 mb-8 p-4 min-h-[5rem] border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
+                        </div>
+
+                    <div class="flex justify-center space-x-4 mb-8">
+                        <button id="check-button" class="py-3 px-8 rounded font-bold transition-colors jw-button-primary disabled:opacity-50">
+                            VERIFICAR
+                        </button>
+                        <button id="reset-button" class="py-3 px-8 rounded font-bold transition-colors jw-button-secondary">
+                            LIMPAR
+                        </button>
+                    </div>
+
+                    <p class="text-lg font-semibold mb-2 text-gray-700">Sinais Disponíveis:</p>
+                    <div id="options-container" class="grid grid-cols-4 md:grid-cols-5 gap-2 p-4 bg-white rounded-lg shadow-md min-h-[5rem]">
+                        </div>
+
+                </div>
+            </div>
+
+            <div id="mode8-container" class="text-center hidden">
+                <h3 class="text-xl font-bold mb-6 text-gray-800">Modo 8: Qual é a Frase?</h3>
+                
+                <div class="max-w-4xl mx-auto p-4 bg-gray-100 rounded-lg shadow-inner">
+                    
+                    <p class="text-xl font-semibold mb-4 text-gray-700">Sinais em LIBRAS (na ordem correta):</p>
+                    <div id="sign-prompt-container-m8" class="flex flex-wrap justify-center gap-2 mb-8 p-4 min-h-[5rem] border-2 border-gray-400 rounded-lg bg-gray-50">
+                        </div>
+    
+                    <p class="text-lg font-semibold mb-2 text-gray-700">Sua Resposta (Ordem em Português):</p>
+                    <div id="answer-container-m8" class="flex flex-wrap justify-center gap-2 mb-8 p-4 min-h-[5rem] border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
+                        </div>
+    
+                    <div class="flex justify-center space-x-4 mb-8">
+                        <button id="check-button-m8" class="py-3 px-8 rounded font-bold transition-colors jw-button-primary disabled:opacity-50">VERIFICAR</button>
+                        <button id="reset-button-m8" class="py-3 px-8 rounded font-bold transition-colors jw-button-secondary">LIMPAR</button>
+                    </div>
+    
+                    <p class="text-lg font-semibold mb-2 text-gray-700">Palavras Disponíveis:</p>
+                    <div id="options-container-m8" class="flex flex-wrap justify-center gap-2 p-4 bg-white rounded-lg shadow-md min-h-[5rem]">
+                        </div>
+                 </div>
+            </div>
+
+
+            <div id="end-round-screen" class="text-center mt-12 hidden">
+                <p class="text-lg text-gray-600 mb-2">Você concluiu a rodada!</p>
+                <p class="text-3xl font-extrabold text-gray-900 mb-6" id="end-message-title"></p>
+                
+                <div id="final-score-display" class="bg-white inline-block p-2 rounded text-lg font-bold shadow-md mb-6 border border-gray-300">
+                    <span id="final-score-correct" style="color: var(--jw-green);" class="mr-2">0</span>
+                    <span id="final-score-wrong" style="color: var(--jw-red);">0</span>
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button id="end-retry-button" class="py-3 px-8 rounded font-bold transition-colors jw-button-primary">
+                        JOGAR NOVAMENTE
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+    
+    <script>
+        // --- BANCO DE DADOS E MAPAS ---
+        
+        // Mapa de arquivos de imagem (Token de LIBRAS -> Caminho do Arquivo)
+        const signFileMap = {
+            "OI": "frases/Oi_Sinal.jpg",
+            "TCHAU": "frases/Tchau_Sinal.jpg",
+            "BOM": "frases/Bom_Sinal.jpg",
+            "DIA": "frases/Dia_Sinal.jpg",
+            "BEM": "frases/Bem_Sinal.jpg",
+            "BOA": "frases/Boa_Sinal.jpg",
+            "TARDE": "frases/Tarde_Sinal.jpg",
+            "NOITE": "frases/Noite_Sinal.jpg",
+            "EU": "frases/Eu_Sinal.jpg",
+            "TAMBÉM": "frases/Tambem_Sinal.jpg",
+            "VOCÊ": "frases/Voce_Sinal.jpg",
+            "SAÚDE": "frases/Saúde_Sinal.jpg",
+            "AMANHÃ": "frases/Amanha_Sinal.jpg",
+            "ENCONTRAR": "frases/Encontrar_Sinal.jpg",
+            "NOME": "frases/Nome_Sinal.jpg",
+            "MEU": "frases/Meu_Sinal.jpg",
+            "_________": "frases/Tracejado_Sinal.jpg", // Token para o espaço em branco
+            "SINAL": "frases/Sinal_Sinal.jpg",
+            "EL@": "frases/EL@_Sinal.jpg",
+            "AMIGO": "frases/Amigo_Sinal.jpg",
+            "ELE": "frases/Ele_Sinal.jpg",
+            "MARIDO": "frases/Homem_Casado_Sinal.jpg",
+            "ELA": "frases/Ela_Sinal.jpg",
+            "ESPOSA": "frases/Mulher_Casada_Sinal.jpg",
+            "MINHA": "frases/Meu_Sinal.jpg", // Reuso do MEU
+            "PRAZER": "frases/Prazer_Sinal.jpg",
+            "MORA": "frases/Casa_Sinal.jpg",
+            "LUGAR": "frases/Lugar_Sinal.jpg",
+            "SABADO": "frases/Sabado_Sinal.jpg",
+            "REUNIÃO": "frases/Reuniao_Sinal.jpg",
+            "COMEÇA": "frases/Comeca_Sinal.jpg",
+            "TEMPO": "frases/Tempo_Sinal.jpg",
+            "CINCO": "frases/Cinco_Sinal.jpg",
+            "ONTEM": "frases/Ontem_Sinal.jpg",
+            "CANSADO": "frases/Cansado_Sinal.jpg",
+            "NÃO": "frases/Não_Sinal.jpg",
+            "NORMAL": "frases/Normal_Sinal.jpg",
+            "V-A-I": "frases/V_A_I_Sinal.jpg",
+            "?": "frases/Pergunta_Sinal.jpg", // Token para ponto de interrogação
+            "ANCIÃO": "frases/Ancião_Sinal.jpg",
+            "NÃO-TEM": "frases/Nao_Tem_Sinal.jpg",
+            "NÃO_TEM": "frases/Nao_Tem_Sinal.jpg",
+            "PUBLICADOR": "frases/Publicador_Sinal.jpg",
+            "T-J": "frases/TJ_Sinal.jpg",
+            "PIONEIRO-R": "frases/PioneiroR_Sinal.jpg",
+            "SINAIS": "frases/Sinais_Sinal.jpg",
+            "LIBRAS": "frases/Sinais_Sinal.jpg", // Token LIBRAS (reuso de SINAIS)
+            "APRENDENDO": "frases/Aprendendo_Sinal.jpg",
+            "CASA": "frases/Casa_Sinal.jpg",
+            "OUTRO": "frases/Outro_Sinal.jpg",
+            "PACIÊNCIA": "frases/Paciencia_Sinal.jpg",
+            "TEM": "frases/Tem_Sinal.jpg",
+            "PERGUNTA": "frases/Pergunta_Sinal.jpg",
+            "BÍBLIA": "frases/Biblia_Sinal.jpg",
+            "APRENDER": "frases/Aprender_Sinal.jpg",
+            "QUER": "frases/Quer_Sinal.jpg",
+            "DEUS": "frases/Deus_Sinal.jpg",
+            "FILHO": "frases/Filho_Sinal.jpg",
+            "DELE": "frases/Seu_Sinal.jpg",
+            "JEOVÁ": "frases/Jeova_Sinal.jpg",
+            "ME-AJUDAR": "frases/Me_ajudar_Sinal.jpg",
+            "MAO-QUEM": "frases/MAO_Quem_Sinal.jpg",
+            "MUITO": "frases/Muito_Sinal.jpg",
+            "OBRIGADO": "frases/Obrigado_Sinal.jpg",
+            "FÉ": "frases/Fe_Sinal.jpg",
+            "VIVER": "frases/Vida_Sinal.jpg",
+            "SEMPRE": "frases/Sempre_Sinal.jpg",
+            "CONSEGUE": "frases/Consegue_Sinal.jpg",
+            "REI": "frases/Rei_Sinal.jpg", 
+            "GRUPO": "frases/Grupo_Sinal.jpg", // Assumindo que este foi criado
+            "TERRA": "frases/Terra_Sinal.jpg", // Assumindo que este foi criado
+            "TROCA": "frases/Trocar_Sinal.jpg",
+            "DESCULPA": "frases/Desculpa_Sinal.jpg",
+            "PARAÍSO": "frases/Paraiso_Sinal.jpg",
+            "POR-FAVOR": "frases/Por_Favor_Sinal.jpg",
+            "JESUS": "frases/Jesus_Sinal.jpg",
+            "AJUDAR": "frases/Ajudar_Sinal.jpg",
+            "REINO": "frases/Reino_Sinal.jpg", // Token REINO para a última frase
+        };
+
+        // Dados de Frases (40 Frases Completas)
+        // (NOVO) Adicionado 'portuguesTokens' para o Modo 8
+        const rawPhraseData = [
+            { portugues: "Oi.", libras: ["OI"], portuguesTokens: ["Oi."] },
+            { portugues: "Tchau/Adeus.", libras: ["TCHAU"], portuguesTokens: ["Tchau."] },
+            { portugues: "Bom dia, tudo bem?", libras: ["BOM", "DIA", "BEM"], portuguesTokens: ["Bom", "dia,", "tudo", "bem?"] },
+            { portugues: "Boa tarde, tudo bem?", libras: ["BOM", "TARDE", "BEM"], portuguesTokens: ["Boa", "tarde,", "tudo", "bem?"] },
+            { portugues: "Boa noite, tudo bem?", libras: ["BOM", "NOITE", "BEM"], portuguesTokens: ["Boa", "noite,", "tudo", "bem?"] },
+            { portugues: "Eu estou bem também.", libras: ["EU", "BEM", "TAMBÉM"], portuguesTokens: ["Eu", "estou", "bem", "também."] },
+            { portugues: "Como vai, tudo bem?", libras: ["VOCÊ", "SAÚDE", "BEM"], portuguesTokens: ["Como", "vai,", "tudo", "bem?"] },
+            { portugues: "Até amanhã.", libras: ["AMANHÃ", "ENCONTRAR"], portuguesTokens: ["Até", "amanhã."] },
+            { portugues: "Qual é o seu nome?", libras: ["VOCÊ", "NOME"], portuguesTokens: ["Qual", "é", "o", "seu", "nome?"] },
+            { portugues: "Meu nome é", libras: ["MEU", "NOME", "_________"], portuguesTokens: ["Meu", "nome", "é", "_________"] },
+            { portugues: "Qual o seu sinal?", libras: ["VOCÊ", "SINAL"], portuguesTokens: ["Qual", "o", "seu", "sinal?"] },
+            { portugues: "Meu sinal é", libras: ["EU", "SINAL", "_________"], portuguesTokens: ["Meu", "sinal", "é", "_________"] },
+            { portugues: "Ele(a) é meu/minha amigo(a).", libras: ["EL@", "AMIGO"], portuguesTokens: ["Ele(a)", "é", "meu(minha)", "amigo(a)."] },
+            { portugues: "Ele é meu marido.", libras: ["EL@", "MARIDO", "MEU"], portuguesTokens: ["Ele", "é", "o", "meu", "marido."] },
+            { portugues: "Ela é minha esposa.", libras: ["EL@", "ESPOSA", "MEU"], portuguesTokens: ["Ela", "é", "a", "minha", "esposa."] },
+            { portugues: "Prazer em conhecer você.", libras: ["BOM", "PRAZER"], portuguesTokens: ["Prazer", "em", "conhecer", "você."] },
+            { portugues: "Prazer em conhecer você também.", libras: ["PRAZER", "TAMBÉM"], portuguesTokens: ["Prazer", "em", "conhecer", "você", "também."] },
+            { portugues: "Onde você mora?", libras: ["VOCÊ", "CASA", "LUGAR"], portuguesTokens: ["Onde", "você", "mora?"] },
+            { portugues: "No sábado a reunião vai começar às cinco horas da tarde.", libras: ["SABADO", "REUNIÃO", "COMEÇA", "TEMPO", "CINCO", "TARDE"], portuguesTokens: ["No", "Sábado", "reunião", "começa", "às", "cinco", "horas", "da", "tarde."] },
+            { portugues: "Ontem eu estava cansado.", libras: ["ONTEM", "EU", "CANSADO"], portuguesTokens: ["Ontem", "eu", "estava", "cansado."] },
+            { portugues: "Ontem eu não estava cansado.", libras: ["ONTEM", "EU", "CANSADO", "NÃO", "NORMAL"], portuguesTokens: ["Ontem", "eu", "não", "estava", "cansado."] },
+            { portugues: "Amanhã eu estarei cansado?", libras: ["AMANHÃ", "EU", "CANSADO", "V-A-I"], portuguesTokens: ["Amanhã", "eu", "estarei", "cansado?"] },
+            { portugues: "Eu sou ancião.", libras: ["EU", "SINAL", "ANCIÃO"], portuguesTokens: ["Eu", "sou", "ancião."] },
+            { portugues: "Me desculpe.", libras: ["DESCULPA"], portuguesTokens: ["Me", "desculpe."] },
+            { portugues: "Eu não sou ancião.", libras: ["EU", "SINAL", "ANCIÃO", "NÃO-TEM"], portuguesTokens: ["Eu", "não", "sou", "ancião."] },
+            { portugues: "Você é ancião?", libras: ["PERGUNTA", "VOCÊ", "SINAL", "ANCIÃO"], portuguesTokens: ["Você", "é", "ancião?"] },
+            { portugues: "Eu sou publicador.", libras: ["EU", "SINAL", "PUBLICADOR"], portuguesTokens: ["Eu", "sou", "publicador."] },
+            { portugues: "Você é publicador?", libras: ["PERGUNTA", "VOCÊ", "SINAL", "PUBLICADOR"], portuguesTokens: ["Você", "é", "publicador?"] },
+            { portugues: "Eu não sou publicador.", libras: ["EU", "SINAL", "PUBLICADOR", "NÃO-TEM"], portuguesTokens: ["Eu", "não", "sou", "publicador."] },
+            { portugues: "Eu sou Testemunha de Jeová.", libras: ["EU", "SINAL", "T-J"], portuguesTokens: ["Eu", "sou", "Testemunha", "de", "Jeová."] },
+            { portugues: "Eu sou pioneiro regular.", libras: ["EU", "SINAL", "PIONEIRO-R"], portuguesTokens: ["Eu", "sou", "Pioneiro", "Regular."] },
+            { portugues: "Eu estou aprendendo LIBRAS.", libras: ["EU", "SINAIS", "APRENDER"], portuguesTokens: ["Eu", "estou", "aprendendo", "LIBRAS."] },
+            { portugues: "Eu moro em outro lugar.", libras: ["EU", "CASA", "LUGAR", "OUTRO"], portuguesTokens: ["Eu", "moro", "em", "outro", "lugar."] },
+            { portugues: "Eu sou paciente.", libras: ["EU", "PACIÊNCIA"], portuguesTokens: ["Eu", "sou", "uma", "pessoa", "paciente."] },
+            { portugues: "Eu não sou paciente.", libras: ["EU", "PACIÊNCIA", "NÃO_TEM"], portuguesTokens: ["Eu", "não", "sou", "paciente."] },
+            { portugues: "Eu ajudo meu amigo.", libras: ["AMIGO", "EU", "AJUDAR"], portuguesTokens: ["Eu", "ajudo", "meu", "amigo."] },
+            { portugues: "Você é uma pessoa paciente?", libras: ["PERGUNTA", "VOCÊ", "PACIÊNCIA", "TEM"], portuguesTokens: ["Você", "é", "uma", "pessoa", "paciente?"] },
+            { portugues: "Gostaria de aprender sobre a Bíblia?", libras: ["BÍBLIA", "APRENDER", "VOCÊ", "QUER"], portuguesTokens: ["Gostaria", "de", "aprender", "sobre", "a", "Bíblia?"] },
+            { portugues: "Qual nome de Deus?", libras: ["DEUS", "NOME"], portuguesTokens: ["Qual", "o", "nome", "de", "Deus?"] },
+            { portugues: "Jesus é o filho de Jeová Deus.", libras: ["JESUS", "FILHO", "DELE", "JEOVÁ"], portuguesTokens: ["Jesus", "é", "o", "filho", "de", "Jeová."] },
+            { portugues: "Por favor, quem poderia me ajudar?", libras: ["POR-FAVOR", "ME-AJUDAR", "MAO-QUEM"], portuguesTokens: ["Por", "favor,", "quem", "poderia", "me", "ajudar?"] },
+            { portugues: "Muito obrigado.", libras: ["OBRIGADO"], portuguesTokens: ["Muito", "obrigado."] },
+            { portugues: "Se tiver fé poderá viver para sempre.", libras: ["VOCÊ", "FÉ", "TEM", "VIVER", "SEMPRE", "CONSEGUE"], portuguesTokens: ["Se", "tiver", "fé", "poderá", "viver", "para", "sempre."] },
+            { portugues: "O Reino de Deus vai transformar a Terra num Paraíso.", libras: ["REINO", "TERRA", "TROCA", "PARAÍSO"], portuguesTokens: ["O", "Reino", "de", "Deus", "vai", "transformar", "a", "Terra", "num", "Paraíso."] }
+        ];
+        
+        // --- VARIÁVEIS GLOBAIS DE ESTADO ---
+        let currentMode = 7; // Inicia no Modo 7
+        const totalRounds = 10;
+        let gameScore = 0; 
+        let gameMistakes = 0;
+        let phrasesForRound = []; 
+        let currentPhraseIndex = 0;
+        let selectedTokens = []; // Usado por ambos os modos
+        
+        // --- ELEMENTOS DOM ---
+        const DOM = {
+            feedbackMessage: document.getElementById('feedback-message'),
+            progressBar: document.getElementById('progress-bar'),
+            scoreCorrect: document.getElementById('score-correct'),
+            scoreWrong: document.getElementById('score-wrong'),
+            scoreDisplay: document.getElementById('score-display-minimal'),
+
+            // Botões de Modo
+            mode7Button: document.getElementById('mode7-button'),
+            mode8Button: document.getElementById('mode8-button'),
+
+            // Modo 7
+            mode7Container: document.getElementById('mode7-container'),
+            portuguesePhrase: document.getElementById('portuguese-phrase'),
+            answerContainer: document.getElementById('answer-container'),
+            optionsContainer: document.getElementById('options-container'),
+            checkButton: document.getElementById('check-button'),
+            resetButton: document.getElementById('reset-button'),
+
+            // (NOVO) Modo 8
+            mode8Container: document.getElementById('mode8-container'),
+            signPromptContainerM8: document.getElementById('sign-prompt-container-m8'),
+            answerContainerM8: document.getElementById('answer-container-m8'),
+            optionsContainerM8: document.getElementById('options-container-m8'),
+            checkButtonM8: document.getElementById('check-button-m8'),
+            resetButtonM8: document.getElementById('reset-button-m8'),
+
+            // Tela Final
+            finalScoreDisplay: document.getElementById('final-score-display'),
+            finalScoreCorrect: document.getElementById('final-score-correct'),
+            finalScoreWrong: document.getElementById('final-score-wrong'),
+            endRoundScreen: document.getElementById('end-round-screen'),
+            endMessageTitle: document.getElementById('end-message-title'),
+            endRetryButton: document.getElementById('end-retry-button'),
+        };
+
+
+        // --- FUNÇÕES AUXILIARES ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateScoreAndProgress() {
+            DOM.scoreCorrect.textContent = gameScore;
+            DOM.scoreWrong.textContent = gameMistakes;
+
+            const totalCompleted = gameScore + gameMistakes;
+            const progress = (totalCompleted / totalRounds) * 100;
+            DOM.progressBar.style.width = `${progress}%`;
+            
+            if (totalCompleted >= totalRounds) {
+                showEndScreen();
+            }
+
+            // Habilita/Desabilita botões de verificar
+            if (currentMode === 7) {
+                DOM.checkButton.disabled = selectedTokens.length === 0;
+            } else if (currentMode === 8) {
+                DOM.checkButtonM8.disabled = selectedTokens.length === 0;
+            }
+        }
+
+        function displayFeedback(message, type = 'success', duration = 2000) {
+            
+            DOM.feedbackMessage.textContent = message;
+            DOM.feedbackMessage.className = 'text-center font-bold text-lg p-3 rounded-lg mt-4 block mx-auto max-w-lg';
+            
+            const root = getComputedStyle(document.documentElement);
+            const successColor = root.getPropertyValue('--jw-green');
+            const errorColor = root.getPropertyValue('--jw-red');
+            
+            if (type === 'success') {
+                DOM.feedbackMessage.style.backgroundColor = successColor;
+                DOM.feedbackMessage.style.color = 'white';
+                DOM.feedbackMessage.style.border = `1px solid ${successColor}`;
+            } else if (type === 'error') {
+                DOM.feedbackMessage.style.backgroundColor = errorColor;
+                DOM.feedbackMessage.style.color = 'white';
+                DOM.feedbackMessage.style.border = `1px solid ${errorColor}`;
+            }
+
+            DOM.feedbackMessage.classList.remove('hidden');
+
+            setTimeout(() => {
+                DOM.feedbackMessage.classList.add('hidden');
+            }, duration);
+        }
+        
+        // --- (NOVO) CONTROLE DE MODO ---
+        function switchMode(mode) {
+            currentMode = mode;
+            resetGameStates(); // Reseta placar e estado
+            
+            // Esconde tudo
+            DOM.mode7Container.classList.add('hidden');
+            DOM.mode8Container.classList.add('hidden');
+            DOM.endRoundScreen.classList.add('hidden');
+
+            // Reseta botões
+            DOM.mode7Button.classList.remove('jw-button-primary');
+            DOM.mode7Button.classList.add('jw-button-secondary');
+            DOM.mode8Button.classList.remove('jw-button-primary');
+            DOM.mode8Button.classList.add('jw-button-secondary');
+
+            if (mode === 7) {
+                DOM.mode7Container.classList.remove('hidden');
+                DOM.mode7Button.classList.add('jw-button-primary');
+                DOM.mode7Button.classList.remove('jw-button-secondary');
+                setupMode7();
+            } else if (mode === 8) {
+                DOM.mode8Container.classList.remove('hidden');
+                DOM.mode8Button.classList.add('jw-button-primary');
+                DOM.mode8Button.classList.remove('jw-button-secondary');
+                setupMode8();
+            }
+        }
+
+        // --- LÓGICA DO MODO 7: CONSTRUTOR DE FRASES (PT -> LIBRAS) ---
+
+        function resetGameStates() {
+            gameScore = 0;
+            gameMistakes = 0;
+            currentPhraseIndex = 0;
+            selectedTokens = [];
+            updateScoreAndProgress(); // Reseta a barra
+        }
+
+        function setupMode7() {
+            resetGameStates();
+            phrasesForRound = shuffleArray([...rawPhraseData]).slice(0, totalRounds);
+            DOM.mode7Container.classList.remove('hidden');
+            DOM.endRoundScreen.classList.add('hidden');
+            loadNextPhrase7();
+        }
+
+        function loadNextPhrase7() {
+            if (currentPhraseIndex >= phrasesForRound.length) {
+                showEndScreen();
+                return;
+            }
+
+            const currentPhrase = phrasesForRound[currentPhraseIndex];
+            
+            DOM.portuguesePhrase.textContent = currentPhrase.portugues;
+            DOM.answerContainer.innerHTML = '';
+            DOM.optionsContainer.innerHTML = '';
+            selectedTokens = [];
+            DOM.checkButton.disabled = true;
+
+            const availableTokens = shuffleArray([...currentPhrase.libras]);
+
+            availableTokens.forEach((tokenWord, index) => {
+                DOM.optionsContainer.appendChild(createTokenElement7(tokenWord, index, 'option'));
+            });
+
+            updateScoreAndProgress();
+        }
+
+        function createTokenElement7(tokenWord, id, type) {
+            
+            if (tokenWord === '_________') {
+                const instructionElement = document.createElement('div');
+                // **** ALTERAÇÃO SOLICITADA AQUI (TAMANHO) ****
+                instructionElement.className = 'sign-token w-20 h-20 md:w-24 md:h-24 instruction-token';
+                instructionElement.dataset.word = tokenWord;
+                instructionElement.dataset.id = id;
+                instructionElement.dataset.type = type;
+                
+                const contentHTML = `<div class="p-1 text-center h-full flex items-center justify-center flex-col">
+                                       <p class="text-xs">COMPLETAR:</p>
+                                       <p class="text-[0.6rem] font-medium">(Seu nome ou sinal)</p>
+                                   </div>`;
+                
+                instructionElement.innerHTML = contentHTML;
+                instructionElement.addEventListener('click', () => handleTokenClick7(instructionElement));
+                
+                return instructionElement;
+            }
+
+            const tokenElement = document.createElement('div');
+            // **** ALTERAÇÃO SOLICITADA AQUI (TAMANHO) ****
+            tokenElement.className = 'sign-token w-20 h-20 md:w-24 md:h-24'; 
+            tokenElement.dataset.word = tokenWord;
+            tokenElement.dataset.id = id;
+            tokenElement.dataset.type = type; 
+
+            const imagePath = signFileMap[tokenWord] || 'frases/Placeholder.jpg'; 
+            
+            let contentHTML = `<img src="${imagePath}" alt="${tokenWord}" onerror="this.onerror=null;this.src='frases/Placeholder.jpg';" class="w-full h-full object-contain">`;
+
+            tokenElement.innerHTML = contentHTML;
+
+            tokenElement.addEventListener('click', () => handleTokenClick7(tokenElement));
+            
+            return tokenElement;
+        }
+
+        function handleTokenClick7(tokenElement) {
+            
+            if (tokenElement.dataset.type === 'option') {
+                tokenElement.dataset.type = 'answer';
+                DOM.answerContainer.appendChild(tokenElement);
+                selectedTokens.push(tokenElement.dataset.word);
+            } else if (tokenElement.dataset.type === 'answer') {
+                tokenElement.dataset.type = 'option';
+                DOM.optionsContainer.appendChild(tokenElement);
+                const tokenIndex = selectedTokens.findIndex((word, index) => {
+                    const el = DOM.answerContainer.children[index];
+                    return el === tokenElement;
+                });
+                if (tokenIndex > -1) {
+                    selectedTokens.splice(tokenIndex, 1);
+                }
+            }
+            
+            updateScoreAndProgress();
+        }
+
+        function checkPhrase7() {
+            const currentPhrase = phrasesForRound[currentPhraseIndex];
+            const correctOrder = currentPhrase.libras;
+            const userAnswer = selectedTokens;
+
+            if (userAnswer.length !== correctOrder.length) {
+                displayFeedback('ERRO: Frase incompleta. Clique em todos os sinais.', 'error', 2000);
+                return;
+            }
+
+            let isCorrect = true;
+            const answerTokens = Array.from(DOM.answerContainer.children);
+
+            answerTokens.forEach((tokenElement, index) => {
+                if (tokenElement.dataset.word === correctOrder[index]) {
+                    tokenElement.classList.add('token-correct');
+                } else {
+                    tokenElement.classList.add('token-wrong');
+                    isCorrect = false;
+                }
+                tokenElement.removeEventListener('click', handleTokenClick7); 
+            });
+
+            DOM.checkButton.disabled = true; 
+
+            if (isCorrect) {
+                gameScore++;
+                displayFeedback('CORRETO! Ordem da LIBRAS perfeita.', 'success', 1500);
+            } else {
+                gameMistakes++;
+                const correctLibras = correctOrder.join(' > ');
+                displayFeedback(`INCORRETO! A ordem correta era: ${correctLibras}`, 'error', 3000);
+            }
+
+            setTimeout(() => {
+                currentPhraseIndex++;
+                loadNextPhrase7();
+            }, isCorrect ? 1800 : 3500);
+        }
+
+        function resetAnswer7() {
+            selectedTokens = [];
+            
+            const currentPhrase = phrasesForRound[currentPhraseIndex];
+            DOM.answerContainer.innerHTML = '';
+            DOM.optionsContainer.innerHTML = '';
+            
+            const availableTokens = shuffleArray([...currentPhrase.libras]);
+
+            availableTokens.forEach((tokenWord, index) => {
+                DOM.optionsContainer.appendChild(createTokenElement7(tokenWord, index, 'option'));
+            });
+
+            updateScoreAndProgress();
+        }
+        
+        // --- (NOVO) LÓGICA DO MODO 8: LEITURA (LIBRAS -> PT) ---
+        
+        function setupMode8() {
+            resetGameStates();
+            phrasesForRound = shuffleArray([...rawPhraseData]).slice(0, totalRounds);
+            DOM.mode8Container.classList.remove('hidden');
+            DOM.endRoundScreen.classList.add('hidden');
+            loadNextPhrase8();
+        }
+
+        function loadNextPhrase8() {
+             if (currentPhraseIndex >= phrasesForRound.length) {
+                showEndScreen();
+                return;
+            }
+
+            const currentPhrase = phrasesForRound[currentPhraseIndex];
+            
+            // 1. Limpa contêineres e estado
+            DOM.signPromptContainerM8.innerHTML = '';
+            DOM.answerContainerM8.innerHTML = '';
+            DOM.optionsContainerM8.innerHTML = '';
+            selectedTokens = [];
+            DOM.checkButtonM8.disabled = true;
+
+            // 2. Cria o Prompt (Sinais em LIBRAS na ordem correta)
+            currentPhrase.libras.forEach((tokenWord, index) => {
+                DOM.signPromptContainerM8.appendChild(createTokenElement8_Prompt(tokenWord));
+            });
+            
+            // 3. Cria tokens embaralhados (Opções de Palavras em PORTUGUÊS)
+            const availableTokens = shuffleArray([...currentPhrase.portuguesTokens]);
+            availableTokens.forEach((tokenWord, index) => {
+                DOM.optionsContainerM8.appendChild(createTokenElement8_Option(tokenWord, index));
+            });
+
+            updateScoreAndProgress();
+        }
+
+        // Cria o token de IMAGEM (Prompt)
+        function createTokenElement8_Prompt(tokenWord) {
+            const tokenElement = document.createElement('div');
+            // **** ALTERAÇÃO SOLICITADA AQUI (TAMANHO) ****
+            tokenElement.className = 'sign-token w-20 h-20 md:w-24 md:h-24'; 
+            
+            if (tokenWord === '_________') {
+                tokenElement.classList.add('instruction-token');
+                tokenElement.innerHTML = `<div class="p-1 text-center h-full flex items-center justify-center flex-col"><p class="text-xs">COMPLETE:</p><p class="text-[0.6rem] font-medium">(Seu nome ou sinal)</p></div>`;
+            } else {
+                const imagePath = signFileMap[tokenWord] || 'frases/Placeholder.jpg'; 
+                tokenElement.innerHTML = `<img src="${imagePath}" alt="${tokenWord}" onerror="this.onerror=null;this.src='frases/Placeholder.jpg';" class="w-full h-full object-contain">`;
+            }
+            
+            return tokenElement;
+        }
+
+        // Cria o token de TEXTO (Opção)
+        function createTokenElement8_Option(tokenWord, id) {
+            
+            if (tokenWord === '_________') {
+                // LÓGICA DO TOKEN DE INSTRUÇÃO (PT)
+                const instructionElement = document.createElement('div');
+                instructionElement.className = 'text-token instruction-token'; // Usa o estilo de texto
+                instructionElement.dataset.word = tokenWord;
+                instructionElement.dataset.id = id;
+                instructionElement.dataset.type = 'option';
+                
+                const contentHTML = `<div class="p-1 text-center h-full flex items-center justify-center flex-col">
+                                       <p class="text-sm">Complete (seu nome)</p>
+                                   </div>`;
+                
+                instructionElement.innerHTML = contentHTML;
+                instructionElement.addEventListener('click', () => handleTokenClick8(instructionElement));
+                
+                return instructionElement;
+            }
+            
+            // Token de texto normal
+            const tokenElement = document.createElement('div');
+            tokenElement.className = 'text-token'; // Novo estilo
+            tokenElement.dataset.word = tokenWord;
+            tokenElement.dataset.id = id;
+            tokenElement.dataset.type = 'option';
+            
+            tokenElement.textContent = tokenWord; 
+            
+            tokenElement.addEventListener('click', () => handleTokenClick8(tokenElement));
+            return tokenElement;
+        }
+
+        function handleTokenClick8(tokenElement) {
+             if (tokenElement.dataset.type === 'option') {
+                tokenElement.dataset.type = 'answer';
+                DOM.answerContainerM8.appendChild(tokenElement);
+                selectedTokens.push(tokenElement.dataset.word);
+            } else if (tokenElement.dataset.type === 'answer') {
+                tokenElement.dataset.type = 'option';
+                DOM.optionsContainerM8.appendChild(tokenElement);
+                const tokenIndex = selectedTokens.findIndex((word, index) => {
+                    const el = DOM.answerContainerM8.children[index];
+                    return el === tokenElement;
+                });
+                if (tokenIndex > -1) {
+                    selectedTokens.splice(tokenIndex, 1);
+                }
+            }
+            updateScoreAndProgress();
+        }
+
+        function checkPhrase8() {
+            const currentPhrase = phrasesForRound[currentPhraseIndex];
+            const correctOrder = currentPhrase.portuguesTokens;
+            const userAnswer = selectedTokens;
+
+            if (userAnswer.length !== correctOrder.length) {
+                displayFeedback('ERRO: Frase incompleta. Clique em todas as palavras.', 'error', 2000);
+                return;
+            }
+
+            let isCorrect = true;
+            const answerTokens = Array.from(DOM.answerContainerM8.children);
+
+            answerTokens.forEach((tokenElement, index) => {
+                if (tokenElement.dataset.word === correctOrder[index]) {
+                    tokenElement.classList.add('text-token-correct');
+                } else {
+                    tokenElement.classList.add('text-token-wrong');
+                    isCorrect = false;
+                }
+                tokenElement.removeEventListener('click', handleTokenClick8); 
+            });
+
+            DOM.checkButtonM8.disabled = true; 
+
+            if (isCorrect) {
+                gameScore++;
+                displayFeedback('CORRETO! Ordem perfeita.', 'success', 1500);
+            } else {
+                gameMistakes++;
+                const correctLibras = correctOrder.join(' ');
+                displayFeedback(`INCORRETO! A ordem correta era: ${correctLibras}`, 'error', 3000);
+            }
+
+            setTimeout(() => {
+                currentPhraseIndex++;
+                loadNextPhrase8();
+            }, isCorrect ? 1800 : 3500);
+        }
+
+        function resetAnswer8() {
+            selectedTokens = [];
+            
+            const currentPhrase = phrasesForRound[currentPhraseIndex];
+            DOM.answerContainerM8.innerHTML = '';
+            DOM.optionsContainerM8.innerHTML = '';
+            
+            const availableTokens = shuffleArray([...currentPhrase.portuguesTokens]);
+
+            availableTokens.forEach((tokenWord, index) => {
+                DOM.optionsContainerM8.appendChild(createTokenElement8_Option(tokenWord, index));
+            });
+
+            updateScoreAndProgress();
+        }
+
+
+        // --- FIM DE JOGO ---
+        function showEndScreen() {
+            DOM.mode7Container.classList.add('hidden');
+            DOM.mode8Container.classList.add('hidden'); // Esconde o Modo 8
+            DOM.endRoundScreen.classList.remove('hidden');
+
+            DOM.finalScoreCorrect.textContent = gameScore;
+            DOM.finalScoreWrong.textContent = gameMistakes;
+            
+            DOM.endMessageTitle.textContent = `VOCÊ ACERTOU ${gameScore} de ${totalRounds} frases!`;
+
+            DOM.endRetryButton.onclick = () => {
+                switchMode(currentMode); // Reinicia o modo que acabou de terminar
+            };
+        }
+
+
+        // --- INICIALIZAÇÃO ---
+
+        function init() {
+            // (NOVO) Listeners de troca de modo
+            DOM.mode7Button.onclick = () => switchMode(7);
+            DOM.mode8Button.onclick = () => switchMode(8); 
+            
+            // Listeners Modo 7
+            DOM.checkButton.addEventListener('click', checkPhrase7);
+            DOM.resetButton.addEventListener('click', resetAnswer7);
+
+            // (NOVO) Listeners Modo 8
+            DOM.checkButtonM8.addEventListener('click', checkPhrase8);
+            DOM.resetButtonM8.addEventListener('click', resetAnswer8);
+            
+            // Iniciar o Modo 7
+            switchMode(7);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIBRAS - Curso Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --jw-green: #449D44;
+            --jw-text: #333333;
+            --jw-bg: #FFFFFF;
+        }
+        body { 
+            font-family: 'Open Sans', sans-serif; 
+            background-color: var(--jw-bg); 
+            color: var(--jw-text); 
+        }
+        
+        .nav-link { color: #666; font-size: 0.95rem; margin-left: 20px; transition: color 0.2s; }
+        .nav-link:hover { color: var(--jw-green); }
+
+        .tool-card { cursor: pointer; transition: all 0.2s; text-align: center; padding: 10px; border: 1px solid transparent; }
+        .tool-card:hover { transform: translateY(-5px); border-color: #eee; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-radius: 12px; }
+        .tool-card img { height: 140px; object-fit: contain; margin-bottom: 10px; width: 100%; }
+        .tool-title { font-size: 1.2rem; color: #006080; font-weight: 400; margin-top: 10px; }
+
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #F8F9FA; z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- TELAS DE LOGIN -->
+    <div id="login-overlay">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center border border-gray-200">
+            <h2 class="text-3xl font-light mb-2 text-gray-700">LIBRAS</h2>
+            <p class="text-gray-500 mb-8 text-sm uppercase tracking-wider">Acesso ao Curso</p>
+            
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 ml-1">E-MAIL</label>
+                    <input type="email" id="email" class="w-full p-3 border border-gray-300 rounded">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 ml-1">SENHA</label>
+                    <input type="password" id="password" class="w-full p-3 border border-gray-300 rounded">
+                </div>
+                
+                <button id="btn-login-email" class="w-full bg-jw-green text font-bold py-3 rounded hover:bg-green-700 transition mt-2">
+                    ENTRAR
+                </button>
+                
+                <div class="relative flex py-4 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-xs">OU ACESSE COM</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-login-google" class="border border-gray-300 bg-white text-gray-600 font-semibold py-2 rounded hover:bg-gray-50 flex items-center justify-center transition text-sm">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 mr-2">
+                        Google
+                    </button>
+                    <button id="btn-login-apple" class="bg-black text-white font-semibold py-2 rounded hover:bg-gray-800 flex items-center justify-center transition text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.21-.93 3.69-.93 1.55 0 2.58.53 3.18 1.65-.16.09-1.96 1.32-1.98 3.89-.02 3.05 2.58 4.35 2.64 4.38-.01.04-1.54 5.29-2.61 7.24zm-4.8-13.69c.81-1.18.53-2.85.53-2.85s-1.47.15-2.86 1.55c-.78.78-1.29 2.04-1.29 2.86 0 0 1.59.15 3.62-1.56z"></path>
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+            </div>
+
+            <p id="login-msg" class="mt-4 text-sm text-red-500 font-semibold hidden"></p>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 ease-in">
+        <nav class="flex justify-between items-center py-6 px-8 max-w-6xl mx-auto w-full">
+            <div class="text-2xl text-gray-500 font-light tracking-wider">LIBRAS</div>
+            <div class="hidden md:flex items-center">
+                <a href="#" class="nav-link" style="color: var(--jw-green);">Página inicial</a>
+                <a href="#materiais-section" class="nav-link">Material</a>
+                <a href="Soletracao.html" class="nav-link">Soletração</a>
+                <a href="Associacao.html" class="nav-link">Combinações</a>
+                <a href="Frases.html" class="nav-link">Frases</a>
+
+                <button id="btn-logout" class="ml-6 text-sm text-red-500 border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition">
+                    Sair
+                </button>
+            </div>
+        </nav>
+
+        <header class="text-center py-12 px-4">
+            <h1 class="text-4xl md:text-5xl text-gray-600 font-light mb-2">
+                Bem-vindo às ferramentas do curso de LIBRAS!
+            </h1>
+            <div class="w-full h-px bg-gray-200 mt-12 max-w-6xl mx-auto"></div>
+        </header>
+
+        <section class="max-w-5xl mx-auto px-4 py-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                
+                <a href="Soletracao.html" class="tool-card group">
+                    <img src="assets/img_soletracao.png" onerror="this.src='https://placehold.co/300x200/png?text=ABC+Libras'" alt="Soletração">
+                    <h3 class="tool-title">Soletração</h3>
+                </a>
+
+                <a href="Associacao.html" class="tool-card group">
+                    <img src="assets/img_associacao.png" onerror="this.src='https://placehold.co/300x200/png?text=Combinacoes'" alt="Combinações">
+                    <h3 class="tool-title">Combinações</h3>
+                </a>
+
+                <a href="Frases.html" class="tool-card group">
+                    <img src="assets/img_frases.png" onerror="this.src='https://placehold.co/300x200/png?text=Frases'" alt="Frases">
+                    <h3 class="tool-title">Frases</h3>
+                </a>
+            </div>
+        </section>
+
+        <section id="materiais-section" class="max-w-4xl mx-auto px-4 py-16 mt-8">
+            <h2 class="text-2xl font-light text-gray-600 mb-8 border-b pb-2">📂 Materiais de Estudo</h2>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="p-6 bg-gray-50 rounded-lg border border-gray-100">
+                    <h3 class="font-bold text-gray-700 mb-4 flex items-center">
+                        <span class="text-2xl mr-2">📘</span> Documentos
+                    </h3>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="materiais/LIBRAS - Caderno de Atividades.pdf" download class="flex items-center text-jw-green hover:underline">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Caderno de Atividades (PDF)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="materiais/LIBRAS - Guia do Aluno.pdf" download class="flex items-center text-jw-green hover:underline">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Guia do Aluno (PDF)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center py-8 text-gray-400 text-sm">
+            &copy; 2025 Curso LIBRAS LS-Roo
+        </footer>
+    </div>
+
+    <!-- SCRIPT FIREBASE CORRIGIDO -->
+    <script type="module">
+
+/* ======================
+   IMPORTS OBRIGATÓRIOS
+======================*/
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getAuth, onAuthStateChanged, signInWithPopup,
+    signInWithEmailAndPassword, signOut,
+    GoogleAuthProvider, OAuthProvider
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+    getFirestore, doc, getDoc, setDoc, updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* ======================
+   CONFIG FIREBASE
+======================*/
+const firebaseConfig = {
+    apiKey: "AIzaSyBrmK6AZZgm0HSAseQ0ZptZKLopnUuyU4g",
+    authDomain: "curso-libras-lsroo.firebaseapp.com",
+    projectId: "curso-libras-lsroo",
+    storageBucket: "curso-libras-lsroo.firebasestorage.app",
+    messagingSenderId: "886224564724",
+    appId: "1:886224564724:web:02ef42f077e2b2bd1f49a1"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ======================
+   ELEMENTOS DOM
+======================*/
+const loginOverlay = document.getElementById('login-overlay');
+const mainContent  = document.getElementById('main-content');
+const loginMsg     = document.getElementById('login-msg');
+
+/* ======================
+   SESSÃO ÚNICA
+======================*/
+function generateSessionToken() {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+async function registerSession(user) {
+    const token = generateSessionToken();
+    const ref = doc(db, "users", user.uid);
+
+    try {
+        const snap = await getDoc(ref);
+        if (!snap.exists())
+            await setDoc(ref, { email: user.email, tipo: "aluno", sessionToken: token });
+        else
+            await updateDoc(ref, { sessionToken: token });
+
+        localStorage.setItem("sessionToken", token);
+    }
+    catch (err) { console.warn("Erro ao registrar sessão:", err); }
+}
+
+async function verifySession(user) {
+    const local = localStorage.getItem("sessionToken");
+    const ref = doc(db, "users", user.uid);
+
+    try {
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const server = snap.data().sessionToken;
+            if (server && server !== local) {
+                await signOut(auth);
+                alert("Sua conta foi acessada em outro dispositivo.");
+                return false;
+            }
+        }
+    } catch {}
+    return true;
+}
+
+/* ======================
+   LISTENER DE LOGIN
+======================*/
+onAuthStateChanged(auth, async user => {
+    if (user) {
+        const ok = await verifySession(user);
+        if (!ok) return;
+
+        loginOverlay.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+        setTimeout(() => mainContent.classList.remove("opacity-0"), 100);
+    } else {
+        loginOverlay.classList.remove("hidden");
+        mainContent.classList.add("hidden");
+        mainContent.classList.add("opacity-0");
+    }
+});
+
+/* ======================
+   LOGIN GOOGLE
+======================*/
+document.getElementById("btn-login-google").onclick = async () => {
+    try {
+        const provider = new GoogleAuthProvider();
+        const result   = await signInWithPopup(auth, provider);
+        await registerSession(result.user);
+    } catch (err) {
+        showError("Erro ao entrar com Google.");
+        console.error(err);
+    }
+};
+
+/* ======================
+   LOGIN EMAIL/SENHA
+======================*/
+document.getElementById("btn-login-email").onclick = async () => {
+    const email = document.getElementById("email").value;
+    const pass  = document.getElementById("password").value;
+
+    if (!email || !pass) return showError("Preencha os campos.");
+
+    try {
+        const result = await signInWithEmailAndPassword(auth, email, pass);
+        await registerSession(result.user);
+    } catch {
+        showError("E-mail ou senha inválidos.");
+    }
+};
+
+/* ======================
+   LOGOUT
+======================*/
+document.getElementById("btn-logout").onclick = () => {
+    signOut(auth);
+    localStorage.removeItem("sessionToken");
+};
+
+/* ======================
+   ERROS
+======================*/
+function showError(msg) {
+    loginMsg.textContent = msg;
+    loginMsg.classList.remove("hidden");
+}
+    </script>
+
+</body>
+</html>
