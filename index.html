@@ -229,11 +229,19 @@ async function verifySession(user) {
         const snap = await getDoc(ref);
         if (snap.exists()) {
             const server = snap.data().sessionToken;
-            if (server && server !== local) {
+            // NOVA REGRA: Primeiro login no dispositivo → sincronizar token local
+            if (!local && server) {
+                localStorage.setItem("sessionToken", server);
+                return true; // permitir login normalmente
+}
+
+// SE AMBOS EXISTEM e são diferentes → detectar login em outro dispositivo
+            if (server && local && server !== local) {
                 await signOut(auth);
                 alert("Sua conta foi acessada em outro dispositivo.");
                 return false;
-            }
+}
+
         }
     } catch {}
     return true;
@@ -307,6 +315,7 @@ function showError(msg) {
 
 </body>
 </html>
+
 
 
 
