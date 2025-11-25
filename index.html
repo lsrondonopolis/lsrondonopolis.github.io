@@ -8,28 +8,45 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     :root {
+      --primary-bg: #ffffff;
+      --surface: #f7f8fa;
+      --muted: #6b7280;
+      --accent: #0f766e;
+      --accent-2: #10b981;
+      --heading: #0f172a;
+      --card-border: #e6e9ee;
       --jw-green: #449D44;
       --jw-green-light: #b7e4c7;
       --jw-text: #333333;
       --jw-bg: #FFFFFF;
+      --font-sans: 'Open Sans', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    body { font-family: 'Open Sans', sans-serif; background-color: var(--jw-bg); color: var(--jw-text); }
 
-    .nav-link { color: #666; font-size: 0.95rem; margin-left: 20px; transition: color 0.2s; }
-    .nav-link:hover { color: var(--jw-green); }
+    /* Base */
+    html,body { height:100%; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--primary-bg);
+      color: var(--heading);
+      margin: 0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
 
-    .tool-card { cursor: pointer; transition: all 0.2s; text-align: center; padding: 10px; border: 1px solid transparent; }
-    .tool-card:hover { transform: translateY(-5px); border-color: #eee; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-radius: 12px; }
-    .tool-card img { height: 140px; object-fit: contain; margin-bottom: 10px; width: 100%; }
-    .tool-title { font-size: 1.2rem; color: #006080; font-weight: 400; margin-top: 10px; }
+    /* Header / Nav */
+    nav { background: transparent; }
+    .nav-link { color: var(--muted); font-weight: 600; margin-left: 18px; text-decoration:none; }
+    .nav-link:hover { color: var(--accent); }
 
+    /* Login overlay */
     #login-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(248,249,250,0.98); z-index: 100;
+      position: fixed; inset:0;
+      background-color: rgba(248,249,250,0.98); z-index: 1000;
       display: flex; justify-content: center; align-items: center;
     }
+    .card { background:#fff; border:1px solid var(--card-border); border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,0.06); }
 
-    /* Botão Entrar: fonte preta, preenchimento verde claro; ao clicar fica verde */
+    /* Buttons */
     .btn-login {
       width: 100%;
       background-color: var(--jw-green-light);
@@ -39,43 +56,76 @@
       border-radius: 0.5rem;
       border: none;
       cursor: pointer;
-      transition: background-color 0.12s ease;
+      transition: background-color 0.12s ease, transform 0.06s ease;
     }
     .btn-login:active,
     .btn-login.btn-pressed {
       background-color: var(--jw-green);
       color: #fff;
+      transform: translateY(1px);
     }
+    .btn-ghost { background:#fff; border:1px solid #e6e9ee; padding:0.5rem 0.75rem; border-radius:8px; cursor:pointer; }
 
-    .hidden { display: none !important; }
-    .opacity-0 { opacity: 0; }
+    /* Layout main */
+    .app-shell { display:flex; gap:24px; max-width:1200px; margin:0 auto; padding:24px; align-items:flex-start; }
+    .sidebar {
+      width:220px;
+      background:var(--surface);
+      border:1px solid var(--card-border);
+      border-radius:12px;
+      padding:12px;
+      height:fit-content;
+    }
+    .sidebar a { display:block; padding:10px 8px; color:var(--heading); text-decoration:none; border-radius:8px; font-weight:600; }
+    .sidebar a:hover { background: rgba(16,185,129,0.08); color:var(--accent-2); }
 
-    /* Modais */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:200; }
+    .content-area { flex:1; }
+
+    /* Cards */
+    .tool-card { border:1px solid var(--card-border); background:#fff; color:var(--heading); border-radius:12px; padding:12px; text-align:center; transition:transform .12s ease, box-shadow .12s ease; }
+    .tool-card:hover { transform:translateY(-6px); box-shadow:0 12px 30px rgba(2,6,23,0.06); }
+    .tool-title { color:var(--accent); font-weight:600; margin-top:8px; }
+
+    /* Footer */
+    footer { color:#94a3b8; }
+
+    /* Modals */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:2000; }
     .modal-card { background:#fff; padding:1.25rem; border-radius:0.5rem; width:100%; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,0.12); }
     .input { width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:0.375rem; margin-bottom:0.75rem; }
     .btn-primary { background:var(--jw-green); color:#fff; padding:0.5rem 0.75rem; border-radius:0.375rem; border:none; cursor:pointer; }
     .btn-secondary { background:#f3f4f6; color:#111827; padding:0.5rem 0.75rem; border-radius:0.375rem; border:none; cursor:pointer; }
     .text-error { color:#dc2626; font-size:0.9rem; margin-top:0.5rem; }
     .text-success { color:#16a34a; font-size:0.9rem; margin-top:0.5rem; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .app-shell { padding:12px; flex-direction:column; }
+      .sidebar { display:none; width:100%; }
+      .sidebar-toggle { display:inline-block; background:var(--accent); color:#fff; padding:8px 10px; border-radius:8px; border:none; cursor:pointer; }
+      nav .hidden-md { display:none; }
+    }
+
+    .hidden { display:none !important; }
+    .opacity-0 { opacity:0; }
   </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
   <!-- LOGIN OVERLAY -->
   <div id="login-overlay">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center border border-gray-200">
-      <h2 class="text-3xl font-light mb-2 text-gray-700">LIBRAS</h2>
+    <div class="card p-8 w-full max-w-md text-center">
+      <h2 class="text-3xl font-light mb-2" style="color:var(--heading)">LIBRAS</h2>
       <p class="text-gray-500 mb-8 text-sm uppercase tracking-wider">Acesso ao Curso</p>
 
       <div class="space-y-3 text-left">
         <div>
           <label class="text-xs font-bold text-gray-500 ml-1">E-MAIL</label>
-          <input type="email" id="email" class="w-full p-3 border border-gray-300 rounded" autocomplete="username">
+          <input type="email" id="email" class="input" autocomplete="username">
         </div>
         <div>
           <label class="text-xs font-bold text-gray-500 ml-1">SENHA</label>
-          <input type="password" id="password" class="w-full p-3 border border-gray-300 rounded" autocomplete="current-password">
+          <input type="password" id="password" class="input" autocomplete="current-password">
         </div>
 
         <button id="btn-login-email" class="btn-login" type="button">ENTRAR</button>
@@ -87,13 +137,10 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <button id="btn-login-google" class="border border-gray-300 bg-white text-gray-600 font-semibold py-2 rounded hover:bg-gray-50 flex items-center justify-center transition text-sm">
+          <button id="btn-login-google" class="btn-ghost flex items-center justify-center text-sm">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 mr-2"> Google
           </button>
-          <button id="btn-login-apple" class="bg-black text-white font-semibold py-2 rounded hover:bg-gray-800 flex items-center justify-center transition text-sm">
-            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.21-.93 3.69-.93 1.55 0 2.58.53 3.18 1.65-.16.09-1.96 1.32-1.98 3.89-.02 3.05 2.58 4.35 2.64 4.38-.01.04-1.54 5.29-2.61 7.24zm-4.8-13.69c.81-1.18.53-2.85.53-2.85s-1.47.15-2.86 1.55c-.78.78-1.29 2.04-1.29 2.86 0 0 1.59.15 3.62-1.56z"></path></svg>
-            Apple
-          </button>
+          <div></div>
         </div>
 
         <div class="text-center mt-3">
@@ -107,55 +154,74 @@
 
   <!-- CONTEÚDO PRINCIPAL -->
   <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 ease-in">
-    <nav class="flex justify-between items-center py-6 px-8 max-w-6xl mx-auto w-full">
-      <div class="text-2xl text-gray-500 font-light tracking-wider">LIBRAS</div>
-      <div class="hidden md:flex items-center">
-        <a href="#" class="nav-link" style="color: var(--jw-green);">Página inicial</a>
-        <a href="#materiais-section" class="nav-link">Material</a>
-        <a href="Soletracao.html" class="nav-link">Soletração</a>
-        <a href="Associacao.html" class="nav-link">Combinações</a>
-        <a href="Frases.html" class="nav-link">Frases</a>
+    <nav class="flex justify-between items-center py-6 px-6 max-w-6xl mx-auto w-full">
+      <div class="flex items-center gap-4">
+        <div class="text-2xl font-light tracking-wider" style="color:var(--heading)">LIBRAS</div>
+        <button id="sidebar-toggle" class="sidebar-toggle hidden md:inline-block">Menu</button>
+      </div>
 
-        <button id="btn-logout" class="ml-6 text-sm text-red-500 border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition">
-          Sair
-        </button>
+      <div class="flex items-center gap-4">
+        <div class="hidden md:flex items-center">
+          <a href="index.html" class="nav-link">Página inicial</a>
+          <a href="#materiais-section" class="nav-link">Material</a>
+          <a href="Soletracao.html" class="nav-link">Soletração</a>
+          <a href="Associacao.html" class="nav-link">Combinações</a>
+          <a href="Frases.html" class="nav-link">Frases</a>
+        </div>
+
+        <button id="btn-logout" class="ml-4 text-sm" style="background:#ef4444;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;">Sair</button>
       </div>
     </nav>
 
-    <header class="text-center py-12 px-4">
-      <h1 class="text-4xl md:text-5xl text-gray-600 font-light mb-2">Bem-vindo às ferramentas do curso de LIBRAS!</h1>
-      <div class="w-full h-px bg-gray-200 mt-12 max-w-6xl mx-auto"></div>
-    </header>
+    <div class="app-shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="app-sidebar" aria-hidden="false">
+        <nav>
+          <a href="Soletracao.html">Atividades</a>
+          <a href="#materiais-section">Material</a>
+          <a href="Associacao.html">Combinações</a>
+          <a href="Frases.html">Frases</a>
+        </nav>
+      </aside>
 
-    <section class="max-w-5xl mx-auto px-4 py-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-        <a href="Soletracao.html" class="tool-card group">
-          <img src="assets/img_soletracao.png" onerror="this.src='https://placehold.co/300x200/png?text=ABC+Libras'" alt="Soletração">
-          <h3 class="tool-title">Soletração</h3>
-        </a>
-        <a href="Associacao.html" class="tool-card group">
-          <img src="assets/img_associacao.png" onerror="this.src='https://placehold.co/300x200/png?text=Combinacoes'" alt="Combinações">
-          <h3 class="tool-title">Combinações</h3>
-        </a>
-        <a href="Frases.html" class="tool-card group">
-          <img src="assets/img_frases.png" onerror="this.src='https://placehold.co/300x200/png?text=Frases'" alt="Frases">
-          <h3 class="tool-title">Frases</h3>
-        </a>
-      </div>
-    </section>
+      <!-- ÁREA DE CONTEÚDO -->
+      <main class="content-area">
+        <header class="text-left py-6 px-4">
+          <h1 class="text-3xl md:text-4xl" style="color:var(--heading);font-weight:300;margin:0 0 8px 0">Bem-vindo às ferramentas do curso de LIBRAS!</h1>
+          <div class="w-full h-px bg-gray-200 mt-4 max-w-6xl"></div>
+        </header>
 
-    <section id="materiais-section" class="max-w-4xl mx-auto px-4 py-16 mt-8">
-      <h2 class="text-2xl font-light text-gray-600 mb-8 border-b pb-2">📂 Materiais de Estudo</h2>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="p-6 bg-gray-50 rounded-lg border border-gray-100">
-          <h3 class="font-bold text-gray-700 mb-4 flex items-center"><span class="text-2xl mr-2">📘</span> Documentos</h3>
-          <ul class="space-y-3">
-            <li><a href="materiais/LIBRAS - Caderno de Atividades.pdf" download class="flex items-center text-jw-green hover:underline">Caderno de Atividades (PDF)</a></li>
-            <li><a href="materiais/LIBRAS - Guia do Aluno.pdf" download class="flex items-center text-jw-green hover:underline">Guia do Aluno (PDF)</a></li>
-          </ul>
-        </div>
-      </div>
-    </section>
+        <section class="max-w-5xl mx-auto px-4 py-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="Soletracao.html" class="tool-card group">
+              <img src="assets/img_soletracao.png" onerror="this.src='https://placehold.co/300x200/png?text=ABC+Libras'" alt="Soletração" style="height:140px;object-fit:contain;border-radius:8px;">
+              <h3 class="tool-title">Soletração</h3>
+            </a>
+            <a href="Associacao.html" class="tool-card group">
+              <img src="assets/img_associacao.png" onerror="this.src='https://placehold.co/300x200/png?text=Combinacoes'" alt="Combinações" style="height:140px;object-fit:contain;border-radius:8px;">
+              <h3 class="tool-title">Combinações</h3>
+            </a>
+            <a href="Frases.html" class="tool-card group">
+              <img src="assets/img_frases.png" onerror="this.src='https://placehold.co/300x200/png?text=Frases'" alt="Frases" style="height:140px;object-fit:contain;border-radius:8px;">
+              <h3 class="tool-title">Frases</h3>
+            </a>
+          </div>
+        </section>
+
+        <section id="materiais-section" class="max-w-4xl mx-auto px-4 py-16 mt-8">
+          <h2 class="text-2xl font-light text-gray-600 mb-8 border-b pb-2">📂 Materiais de Estudo</h2>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="p-6 bg-gray-50 rounded-lg border border-gray-100">
+              <h3 class="font-bold text-gray-700 mb-4 flex items-center"><span class="text-2xl mr-2">📘</span> Documentos</h3>
+              <ul class="space-y-3">
+                <li><a href="materiais/LIBRAS - Caderno de Atividades.pdf" download class="flex items-center" style="color:var(--accent);">Caderno de Atividades (PDF)</a></li>
+                <li><a href="materiais/LIBRAS - Guia do Aluno.pdf" download class="flex items-center" style="color:var(--accent);">Guia do Aluno (PDF)</a></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
 
     <footer class="text-center py-8 text-gray-400 text-sm">&copy; 2025 Curso LIBRAS LS-Roo</footer>
   </div>
@@ -193,12 +259,12 @@
     import {
       getAuth, onAuthStateChanged, signInWithPopup,
       signInWithEmailAndPassword, signOut,
-      GoogleAuthProvider, OAuthProvider,
+      GoogleAuthProvider,
       sendPasswordResetEmail, updatePassword,
       EmailAuthProvider, reauthenticateWithCredential
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import {
-      getFirestore, doc, getDoc, setDoc, updateDoc
+      getFirestore, doc, getDoc, setDoc
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // ===== CONFIG FIREBASE (ajuste conforme seu projeto) =====
@@ -233,6 +299,10 @@
     const btnSendReset = document.getElementById('btn-send-reset');
     const forgotEmail = document.getElementById('forgot-email');
     const forgotMsg = document.getElementById('forgot-msg');
+
+    // Sidebar elements
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const appSidebar = document.getElementById('app-sidebar');
 
     // Gera token de sessão simples
     function generateSessionToken() {
@@ -343,19 +413,6 @@
       }
     };
 
-    // LOGIN APPLE (mantido, mas você disse que não usará)
-    document.getElementById("btn-login-apple").onclick = async () => {
-      try {
-        const provider = new OAuthProvider('apple.com');
-        provider.setCustomParameters({ prompt: 'select_account' });
-        const result = await signInWithPopup(auth, provider);
-        await registerSession(result.user);
-      } catch (err) {
-        showError("Erro ao entrar com Apple.");
-        console.error(err);
-      }
-    };
-
     // LOGIN EMAIL/SENHA
     btnLogin.onclick = async () => {
       btnLogin.classList.add('btn-pressed');
@@ -378,13 +435,20 @@
       }
     };
 
-    // Logout
-    document.getElementById("btn-logout").onclick = async () => {
-      const user = auth.currentUser;
-      await clearServerSession(user);
-      await signOut(auth);
-      localStorage.removeItem("sessionToken");
-    };
+    // Logout principal (visível)
+    const btnLogoutMain = document.getElementById('btn-logout');
+    if (btnLogoutMain) {
+      btnLogoutMain.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        await clearServerSession(user);
+        await signOut(auth);
+        localStorage.removeItem("sessionToken");
+        // voltar para overlay de login
+        loginOverlay.classList.remove('hidden');
+        mainContent.classList.add('hidden');
+        mainContent.classList.add('opacity-0');
+      });
+    }
 
     function showError(msg) {
       loginMsg.textContent = msg;
@@ -498,6 +562,19 @@
     // Fechar modais ao clicar fora (UX)
     changePassModal.addEventListener('click', (e) => { if (e.target === changePassModal) showChangePassModal(false); });
     forgotModal.addEventListener('click', (e) => { if (e.target === forgotModal) showForgotModal(false); });
+
+    // Sidebar toggle for mobile
+    if (sidebarToggle && appSidebar) {
+      sidebarToggle.addEventListener('click', () => {
+        const isHidden = getComputedStyle(appSidebar).display === 'none';
+        appSidebar.style.display = isHidden ? 'block' : 'none';
+      });
+      if (window.innerWidth <= 900) appSidebar.style.display = 'none';
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 900) appSidebar.style.display = 'block';
+        else appSidebar.style.display = 'none';
+      });
+    }
 
   </script>
 </body>
