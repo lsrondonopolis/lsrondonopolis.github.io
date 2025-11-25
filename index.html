@@ -205,45 +205,34 @@ function generateSessionToken() {
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
-async function registerSession(user) {
-    const token = generateSessionToken();
-    const ref = doc(db, "users", user.uid);
-
-    try {
-        const snap = await getDoc(ref);
-        if (!snap.exists())
-            await setDoc(ref, { email: user.email, tipo: "aluno", sessionToken: token });
-        else
-            await updateDoc(ref, { sessionToken: token });
-
-        localStorage.setItem("sessionToken", token);
-    }
-    catch (err) { console.warn("Erro ao registrar sessão:", err); }
-}
-
 async function verifySession(user) {
     const local = localStorage.getItem("sessionToken");
     const ref = doc(db, "users", user.uid);
 
     try {
         const snap = await getDoc(ref);
+
         if (snap.exists()) {
             const server = snap.data().sessionToken;
-            // NOVA REGRA: Primeiro login no dispositivo → sincronizar token local
+
+            // 1. PRIMEIRO LOGIN NO DISPOSITIVO
             if (!local && server) {
                 localStorage.setItem("sessionToken", server);
-                return true; // permitir login normalmente
-}
+                return true; 
+            }
 
-// SE AMBOS EXISTEM e são diferentes → detectar login em outro dispositivo
+            // 2. LOGIN DUPLO
             if (server && local && server !== local) {
                 await signOut(auth);
                 alert("Sua conta foi acessada em outro dispositivo.");
                 return false;
-}
-
+            }
         }
-    } catch {}
+
+    } catch (err) {
+        console.warn("Erro ao verificar sessão:", err);
+    }
+
     return true;
 }
 
@@ -315,6 +304,7 @@ function showError(msg) {
 
 </body>
 </html>
+
 
 
 
