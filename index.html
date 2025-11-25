@@ -49,6 +49,15 @@
 
     .hidden { display: none !important; }
     .opacity-0 { opacity: 0; }
+
+    /* Modais */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:200; }
+    .modal-card { background:#fff; padding:1.25rem; border-radius:0.5rem; width:100%; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,0.12); }
+    .input { width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:0.375rem; margin-bottom:0.75rem; }
+    .btn-primary { background:var(--jw-green); color:#fff; padding:0.5rem 0.75rem; border-radius:0.375rem; border:none; cursor:pointer; }
+    .btn-secondary { background:#f3f4f6; color:#111827; padding:0.5rem 0.75rem; border-radius:0.375rem; border:none; cursor:pointer; }
+    .text-error { color:#dc2626; font-size:0.9rem; margin-top:0.5rem; }
+    .text-success { color:#16a34a; font-size:0.9rem; margin-top:0.5rem; }
   </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -85,6 +94,10 @@
             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.21-.93 3.69-.93 1.55 0 2.58.53 3.18 1.65-.16.09-1.96 1.32-1.98 3.89-.02 3.05 2.58 4.35 2.64 4.38-.01.04-1.54 5.29-2.61 7.24zm-4.8-13.69c.81-1.18.53-2.85.53-2.85s-1.47.15-2.86 1.55c-.78.78-1.29 2.04-1.29 2.86 0 0 1.59.15 3.62-1.56z"></path></svg>
             Apple
           </button>
+        </div>
+
+        <div class="text-center mt-3">
+          <button id="btn-forgot" class="text-sm text-blue-600 underline">Esqueci a senha</button>
         </div>
       </div>
 
@@ -147,13 +160,42 @@
     <footer class="text-center py-8 text-gray-400 text-sm">&copy; 2025 Curso LIBRAS LS-Roo</footer>
   </div>
 
+  <!-- MODAL: FORÇAR ALTERAÇÃO DE SENHA (PRIMEIRO ACESSO) -->
+  <div id="change-pass-modal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card">
+      <h3 class="text-lg font-semibold mb-2">Alterar senha (primeiro acesso)</h3>
+      <p class="text-sm text-gray-600 mb-4">Você recebeu uma senha provisória. Crie uma nova senha para continuar.</p>
+      <input id="new-password" type="password" placeholder="Nova senha" class="input" />
+      <input id="confirm-password" type="password" placeholder="Confirme a nova senha" class="input" />
+      <div class="flex justify-end gap-2">
+        <button id="btn-change-pass" class="btn-primary">Alterar</button>
+      </div>
+      <p id="change-pass-msg" class="text-error hidden"></p>
+    </div>
+  </div>
+
+  <!-- MODAL: ESQUECI A SENHA -->
+  <div id="forgot-modal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card">
+      <h3 class="text-lg font-semibold mb-2">Redefinir senha</h3>
+      <p class="text-sm text-gray-600 mb-4">Informe seu e-mail para receber o link de redefinição.</p>
+      <input id="forgot-email" type="email" placeholder="Seu e-mail" class="input" />
+      <div class="flex justify-end gap-2">
+        <button id="btn-send-reset" class="btn-secondary">Enviar link</button>
+      </div>
+      <p id="forgot-msg" class="text-success hidden"></p>
+    </div>
+  </div>
+
   <!-- SCRIPT FIREBASE E LÓGICA -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
       getAuth, onAuthStateChanged, signInWithPopup,
       signInWithEmailAndPassword, signOut,
-      GoogleAuthProvider, OAuthProvider
+      GoogleAuthProvider, OAuthProvider,
+      sendPasswordResetEmail, updatePassword,
+      EmailAuthProvider, reauthenticateWithCredential
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc
@@ -178,6 +220,19 @@
     const mainContent  = document.getElementById('main-content');
     const loginMsg     = document.getElementById('login-msg');
     const btnLogin     = document.getElementById('btn-login-email');
+
+    // Modais e elementos de troca de senha / reset
+    const changePassModal = document.getElementById('change-pass-modal');
+    const btnChangePass = document.getElementById('btn-change-pass');
+    const newPassInput = document.getElementById('new-password');
+    const confirmPassInput = document.getElementById('confirm-password');
+    const changePassMsg = document.getElementById('change-pass-msg');
+
+    const btnForgot = document.getElementById('btn-forgot');
+    const forgotModal = document.getElementById('forgot-modal');
+    const btnSendReset = document.getElementById('btn-send-reset');
+    const forgotEmail = document.getElementById('forgot-email');
+    const forgotMsg = document.getElementById('forgot-msg');
 
     // Gera token de sessão simples
     function generateSessionToken() {
@@ -228,6 +283,16 @@
       }
     }
 
+    // Helpers para mostrar/ocultar modais
+    function showChangePassModal(show = true) {
+      changePassModal.classList.toggle('hidden', !show);
+      changePassModal.setAttribute('aria-hidden', String(!show));
+    }
+    function showForgotModal(show = true) {
+      forgotModal.classList.toggle('hidden', !show);
+      forgotModal.setAttribute('aria-hidden', String(!show));
+    }
+
     // Listener de autenticação
     onAuthStateChanged(auth, async user => {
       if (user) {
@@ -237,10 +302,29 @@
         if (!localStorage.getItem("sessionToken")) {
           await registerSession(user);
         }
+
+        // Verificar se precisa forçar troca de senha
+        try {
+          const ref = doc(db, 'users', user.uid);
+          const snap = await getDoc(ref);
+          const mustChange = snap.exists() && snap.data().mustChangePassword === true;
+          if (mustChange) {
+            // bloquear acesso ao conteúdo principal e abrir modal
+            mainContent.classList.add('hidden');
+            showChangePassModal(true);
+            return;
+          }
+        } catch (err) {
+          console.warn('Erro ao verificar mustChangePassword', err);
+        }
+
+        // comportamento normal
+        showChangePassModal(false);
         loginOverlay.classList.add("hidden");
         mainContent.classList.remove("hidden");
         setTimeout(() => mainContent.classList.remove("opacity-0"), 100);
       } else {
+        // não autenticado: mostrar overlay
         loginOverlay.classList.remove("hidden");
         mainContent.classList.add("hidden");
         mainContent.classList.add("opacity-0");
@@ -259,11 +343,10 @@
       }
     };
 
-    // LOGIN APPLE
+    // LOGIN APPLE (mantido, mas você disse que não usará)
     document.getElementById("btn-login-apple").onclick = async () => {
       try {
         const provider = new OAuthProvider('apple.com');
-        // solicitar email e nome completo
         provider.setCustomParameters({ prompt: 'select_account' });
         const result = await signInWithPopup(auth, provider);
         await registerSession(result.user);
@@ -275,7 +358,6 @@
 
     // LOGIN EMAIL/SENHA
     btnLogin.onclick = async () => {
-      // efeito visual: manter botão verde enquanto processa
       btnLogin.classList.add('btn-pressed');
       const email = document.getElementById("email").value.trim();
       const pass  = document.getElementById("password").value;
@@ -287,12 +369,11 @@
       try {
         const result = await signInWithEmailAndPassword(auth, email, pass);
         await registerSession(result.user);
-        // navegação: o onAuthStateChanged cuidará de mostrar a página principal
+        // onAuthStateChanged cuidará da navegação e verificação de mustChangePassword
       } catch (err) {
         showError("E-mail ou senha inválidos.");
         console.error(err);
       } finally {
-        // remover efeito após tentativa (se a página principal for exibida, overlay some)
         setTimeout(() => btnLogin.classList.remove('btn-pressed'), 600);
       }
     };
@@ -311,9 +392,113 @@
       setTimeout(() => loginMsg.classList.add("hidden"), 6000);
     }
 
-    // UX: adicionar efeito de pressionado durante mousedown
+    // UX: efeito de pressionado durante mousedown
     btnLogin.addEventListener('mousedown', () => btnLogin.classList.add('btn-pressed'));
     document.addEventListener('mouseup', () => btnLogin.classList.remove('btn-pressed'));
+
+    /* ===========================
+       LÓGICA: TROCAR SENHA (PRIMEIRO ACESSO)
+       =========================== */
+    btnChangePass.addEventListener('click', async () => {
+      changePassMsg.classList.add('hidden');
+      const newPass = newPassInput.value.trim();
+      const confirm = confirmPassInput.value.trim();
+
+      if (!newPass || newPass.length < 6) {
+        changePassMsg.textContent = 'Senha deve ter ao menos 6 caracteres.';
+        changePassMsg.classList.remove('hidden');
+        return;
+      }
+      if (newPass !== confirm) {
+        changePassMsg.textContent = 'As senhas não coincidem.';
+        changePassMsg.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error('Usuário não autenticado.');
+
+        // Tenta atualizar a senha
+        await updatePassword(user, newPass);
+
+        // Atualiza Firestore para remover a obrigatoriedade
+        await setDoc(doc(db, 'users', user.uid), { mustChangePassword: false }, { merge: true });
+
+        // fechar modal e mostrar conteúdo principal
+        showChangePassModal(false);
+        loginOverlay.classList.add('hidden');
+        mainContent.classList.remove('hidden');
+        setTimeout(() => mainContent.classList.remove('opacity-0'), 100);
+      } catch (err) {
+        console.error('Erro ao alterar senha:', err);
+        // Se precisar reautenticar, tenta pedir a senha atual (UX simples)
+        if (err && err.code === 'auth/requires-recent-login') {
+          try {
+            const user = auth.currentUser;
+            const email = user.email;
+            const currentPass = prompt('Por favor, insira sua senha atual para confirmar (senha provisória):');
+            if (!currentPass) throw new Error('Reautenticação cancelada.');
+            const cred = EmailAuthProvider.credential(email, currentPass);
+            await reauthenticateWithCredential(user, cred);
+            await updatePassword(user, newPass);
+            await setDoc(doc(db, 'users', user.uid), { mustChangePassword: false }, { merge: true });
+            showChangePassModal(false);
+            loginOverlay.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            setTimeout(() => mainContent.classList.remove('opacity-0'), 100);
+          } catch (reauthErr) {
+            console.error('Erro na reautenticação:', reauthErr);
+            changePassMsg.textContent = 'Não foi possível alterar a senha. Faça login novamente e tente novamente.';
+            changePassMsg.classList.remove('hidden');
+          }
+        } else {
+          changePassMsg.textContent = 'Erro ao alterar senha. Tente novamente.';
+          changePassMsg.classList.remove('hidden');
+        }
+      }
+    });
+
+    /* ===========================
+       LÓGICA: ESQUECI A SENHA
+       =========================== */
+    btnForgot.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotEmail.value = document.getElementById('email').value || '';
+      forgotMsg.classList.add('hidden');
+      showForgotModal(true);
+    });
+
+    btnSendReset.addEventListener('click', async () => {
+      const email = forgotEmail.value.trim();
+      forgotMsg.classList.add('hidden');
+      if (!email) {
+        forgotMsg.textContent = 'Informe o e-mail.';
+        forgotMsg.classList.remove('hidden');
+        forgotMsg.classList.remove('text-success');
+        forgotMsg.classList.add('text-error');
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        forgotMsg.textContent = 'E-mail de redefinição enviado. Verifique sua caixa de entrada.';
+        forgotMsg.classList.remove('hidden');
+        forgotMsg.classList.remove('text-error');
+        forgotMsg.classList.add('text-success');
+        setTimeout(() => showForgotModal(false), 2500);
+      } catch (err) {
+        console.error('Erro ao enviar reset:', err);
+        forgotMsg.textContent = 'Erro ao enviar e-mail. Verifique o e-mail informado.';
+        forgotMsg.classList.remove('hidden');
+        forgotMsg.classList.remove('text-success');
+        forgotMsg.classList.add('text-error');
+      }
+    });
+
+    // Fechar modais ao clicar fora (UX)
+    changePassModal.addEventListener('click', (e) => { if (e.target === changePassModal) showChangePassModal(false); });
+    forgotModal.addEventListener('click', (e) => { if (e.target === forgotModal) showForgotModal(false); });
+
   </script>
 </body>
 </html>
