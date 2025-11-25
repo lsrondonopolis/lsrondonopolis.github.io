@@ -7,100 +7,114 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg: #ffffff;
-      --surface: #f6f7f9;
-      --muted: #6b7280;
-      --accent: #0f766e;    /* tom esverdeado */
-      --accent-2: #10b981;  /* verde secundário */
-      --heading: #0f172a;
-      --card-border: #e6e9ee;
+    /* Paleta e tipografia alinhadas ao arquivo Associacao */
+    :root {
       --jw-green: #449D44;
-      --jw-green-light: #b7e4c7;
+      --jw-red: #C9302C;
+      --jw-background: #F0F0EE;
+      --jw-dark: #333333;
+      --card-border: #d1d5db;
+      --muted: #6b7280;
+      --accent: #0f766e;
       --font-sans: 'Open Sans', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
 
-    html,body { height:100%; margin:0; }
+    html, body { height: 100%; margin: 0; }
     body {
       font-family: var(--font-sans);
-      background: var(--bg);
-      color: var(--heading);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
+      background-color: var(--jw-background);
+      color: var(--jw-dark);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     /* Header / Nav */
     nav { background: transparent; }
     .nav-link { color: var(--muted); font-weight:600; margin-left:18px; text-decoration:none; }
-    .nav-link:hover { color: var(--accent); }
+    .nav-link:hover { color: var(--jw-green); }
 
     /* Card base */
-    .card { background:#fff; border:1px solid var(--card-border); border-radius:12px; box-shadow:0 8px 20px rgba(2,6,23,0.04); }
+    .card { background:#fff; border:1px solid var(--card-border); border-radius:10px; box-shadow:0 6px 18px rgba(2,6,23,0.04); }
 
-    /* Login overlay */
+    /* Login overlay (mantive estilo minimalista) */
     #login-overlay {
       position: fixed; inset:0;
-      background-color: rgba(248,249,250,0.98); z-index: 1200;
+      background-color: rgba(240,240,238,0.98); z-index: 1200;
       display:flex; justify-content:center; align-items:center;
     }
     .input { width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; margin-bottom:0.75rem; }
 
-    /* Buttons */
+    /* Botão Entrar: fonte preta, preenchimento verde claro; ao clicar fica verde */
     .btn-login {
       width:100%;
-      background-color: var(--jw-green-light);
-      color:#000;
+      background-color: var(--jw-green);
+      color:#fff;
       font-weight:700;
       padding:0.75rem;
-      border-radius:10px;
+      border-radius:8px;
       border:none;
       cursor:pointer;
       transition: background-color .12s ease, transform .06s ease;
     }
-    .btn-login:active, .btn-login.btn-pressed {
-      background-color: var(--jw-green);
-      color:#fff;
-      transform: translateY(1px);
-    }
+    .btn-login.btn-pressed { background-color: #2f7a2f; transform: translateY(1px); }
+
     .btn-ghost { background:#fff; border:1px solid var(--card-border); padding:0.5rem 0.75rem; border-radius:8px; cursor:pointer; }
 
     /* Layout main */
     .app-shell { display:flex; gap:24px; max-width:1200px; margin:0 auto; padding:24px; align-items:flex-start; }
     .sidebar {
-      width:220px;
-      background:var(--surface);
+      width:240px;
+      background: #fff;
       border:1px solid var(--card-border);
-      border-radius:12px;
+      border-radius:10px;
       padding:12px;
       height:fit-content;
     }
-    .sidebar a { display:block; padding:10px 8px; color:var(--heading); text-decoration:none; border-radius:8px; font-weight:600; }
-    .sidebar a:hover { background: rgba(16,185,129,0.08); color:var(--accent-2); }
+    .sidebar h4 { margin:0 0 8px 0; font-weight:700; color:var(--jw-dark); font-size:0.95rem; }
+    .sidebar ul { list-style:none; padding:0; margin:0 0 12px 0; }
+    .sidebar li { margin:6px 0; }
+    .sidebar a { display:block; padding:8px 10px; color:var(--jw-dark); text-decoration:none; border-radius:8px; font-weight:600; }
+    .sidebar a:hover { background: rgba(68,157,68,0.08); color:var(--jw-green); }
 
     .content-area { flex:1; }
 
-    /* Cards */
-    .tool-card { border:1px solid var(--card-border); background:#fff; color:var(--heading); border-radius:12px; padding:12px; text-align:center; transition:transform .12s ease, box-shadow .12s ease; }
-    .tool-card:hover { transform:translateY(-6px); box-shadow:0 12px 30px rgba(2,6,23,0.06); }
-    .tool-title { color:var(--accent); font-weight:600; margin-top:8px; }
+    /* Cards (central) - imagem e título centralizados */
+    .tool-card {
+      border:1px solid var(--card-border);
+      background:#fff;
+      color:var(--jw-dark);
+      border-radius:12px;
+      padding:18px;
+      text-align:center;
+      transition: transform .12s ease, box-shadow .12s ease;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+    }
+    .tool-card:hover { transform: translateY(-6px); box-shadow:0 12px 30px rgba(2,6,23,0.06); }
+    .tool-card img { width:100%; max-width:260px; height:140px; object-fit:contain; display:block; margin:0 auto; border-radius:8px; }
+    .tool-title { color:var(--jw-dark); font-weight:600; margin:0; }
 
     /* Footer */
     footer { color:#94a3b8; padding-bottom:32px; }
 
-    /* Modals */
+    /* Modais */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:2000; }
     .modal-card { background:#fff; padding:1.25rem; border-radius:0.5rem; width:100%; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,0.12); }
     .btn-primary { background:var(--jw-green); color:#fff; padding:0.5rem 0.75rem; border-radius:0.375rem; border:none; cursor:pointer; }
     .btn-secondary { background:#f3f4f6; color:#111827; padding:0.5rem 0.75rem; border-radius:0.375rem; border:none; cursor:pointer; }
-    .text-error { color:#dc2626; font-size:0.9rem; margin-top:0.5rem; }
-    .text-success { color:#16a34a; font-size:0.9rem; margin-top:0.5rem; }
+    .text-error { color:var(--jw-red); font-size:0.9rem; margin-top:0.5rem; }
+    .text-success { color:var(--jw-green); font-size:0.9rem; margin-top:0.5rem; }
 
     /* Responsive */
-    @media (max-width:900px) {
+    @media (max-width: 900px) {
       .app-shell { padding:12px; flex-direction:column; }
       .sidebar { display:none; width:100%; }
-      .sidebar-toggle { display:inline-block; background:var(--accent); color:#fff; padding:8px 10px; border-radius:8px; border:none; cursor:pointer; }
+      .sidebar-toggle { display:inline-block; background:var(--jw-green); color:#fff; padding:8px 10px; border-radius:8px; border:none; cursor:pointer; }
       nav .hidden-md { display:none; }
+      .tool-card img { max-width:100%; height:120px; }
     }
 
     .hidden { display:none !important; }
@@ -112,16 +126,16 @@
   <!-- LOGIN OVERLAY -->
   <div id="login-overlay">
     <div class="card p-8 w-full max-w-md text-center">
-      <h2 class="text-3xl font-light mb-2" style="color:var(--heading)">LIBRAS</h2>
-      <p class="text-gray-500 mb-8 text-sm uppercase tracking-wider">Acesso ao Curso</p>
+      <h2 class="text-3xl font-light mb-2" style="color:var(--jw-dark)">LIBRAS</h2>
+      <p class="text-gray-600 mb-8 text-sm uppercase tracking-wider">Acesso ao Curso</p>
 
       <div class="space-y-3 text-left">
         <div>
-          <label class="text-xs font-bold text-gray-500 ml-1">E-MAIL</label>
+          <label class="text-xs font-bold text-gray-600 ml-1">E-MAIL</label>
           <input type="email" id="email" class="input" autocomplete="username">
         </div>
         <div>
-          <label class="text-xs font-bold text-gray-500 ml-1">SENHA</label>
+          <label class="text-xs font-bold text-gray-600 ml-1">SENHA</label>
           <input type="password" id="password" class="input" autocomplete="current-password">
         </div>
 
@@ -137,7 +151,6 @@
           <button id="btn-login-google" class="btn-ghost flex items-center justify-center text-sm">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 mr-2"> Google
           </button>
-          <!-- Apple removido intencionalmente -->
           <div></div>
         </div>
 
@@ -154,7 +167,7 @@
   <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 ease-in">
     <nav class="flex justify-between items-center py-6 px-6 max-w-6xl mx-auto w-full">
       <div class="flex items-center gap-4">
-        <div class="text-2xl font-light tracking-wider" style="color:var(--heading)">LIBRAS</div>
+        <div class="text-2xl font-light tracking-wider" style="color:var(--jw-dark)">LIBRAS</div>
         <button id="sidebar-toggle" class="sidebar-toggle hidden md:inline-block">Menu</button>
       </div>
 
@@ -167,53 +180,62 @@
           <a href="Frases.html" class="nav-link">Frases</a>
         </div>
 
-        <button id="btn-logout" class="ml-4 text-sm" style="background:#ef4444;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;">Sair</button>
+        <button id="btn-logout" class="ml-4 text-sm" style="background:var(--jw-red);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;">Sair</button>
       </div>
     </nav>
 
     <div class="app-shell">
-      <!-- SIDEBAR -->
+      <!-- SIDEBAR com estrutura solicitada -->
       <aside class="sidebar" id="app-sidebar" aria-hidden="false">
-        <nav>
-          <a href="Soletracao.html">Atividades</a>
-          <a href="#materiais-section">Material</a>
-          <a href="Associacao.html">Combinações</a>
-          <a href="Frases.html">Frases</a>
-        </nav>
+        <div>
+          <h4>Atividades</h4>
+          <ul>
+            <li><a href="Soletracao.html">Soletração</a></li>
+            <li><a href="Associacao.html">Combinação</a></li>
+            <li><a href="Frases.html">Frases</a></li>
+          </ul>
+        </div>
+        <div style="margin-top:12px;">
+          <h4>Material</h4>
+          <ul>
+            <li><a href="materiais/LIBRAS - Guia do Aluno.pdf" download>Guia do Aluno</a></li>
+            <li><a href="materiais/LIBRAS - Caderno de Atividades.pdf" download>Caderno de atividades</a></li>
+          </ul>
+        </div>
       </aside>
 
       <!-- ÁREA DE CONTEÚDO -->
       <main class="content-area">
         <header class="text-left py-6 px-4">
-          <h1 class="text-3xl md:text-4xl" style="color:var(--heading);font-weight:300;margin:0 0 8px 0">Bem-vindo às ferramentas do curso de LIBRAS!</h1>
+          <h1 class="text-3xl md:text-4xl" style="color:var(--jw-dark);font-weight:300;margin:0 0 8px 0">Bem-vindo às ferramentas do curso de LIBRAS!</h1>
           <div class="w-full h-px bg-gray-200 mt-4 max-w-6xl"></div>
         </header>
 
         <section class="max-w-5xl mx-auto px-4 py-4">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <a href="Soletracao.html" class="tool-card group">
-              <img src="assets/img_soletracao.png" onerror="this.src='https://placehold.co/300x200/png?text=ABC+Libras'" alt="Soletração" style="height:140px;object-fit:contain;border-radius:8px;">
+              <img src="assets/img_soletracao.png" onerror="this.src='https://placehold.co/300x200/png?text=ABC+Libras'" alt="Soletração">
               <h3 class="tool-title">Soletração</h3>
             </a>
             <a href="Associacao.html" class="tool-card group">
-              <img src="assets/img_associacao.png" onerror="this.src='https://placehold.co/300x200/png?text=Combinacoes'" alt="Combinações" style="height:140px;object-fit:contain;border-radius:8px;">
+              <img src="assets/img_associacao.png" onerror="this.src='https://placehold.co/300x200/png?text=Combinacoes'" alt="Combinações">
               <h3 class="tool-title">Combinações</h3>
             </a>
             <a href="Frases.html" class="tool-card group">
-              <img src="assets/img_frases.png" onerror="this.src='https://placehold.co/300x200/png?text=Frases'" alt="Frases" style="height:140px;object-fit:contain;border-radius:8px;">
+              <img src="assets/img_frases.png" onerror="this.src='https://placehold.co/300x200/png?text=Frases'" alt="Frases">
               <h3 class="tool-title">Frases</h3>
             </a>
           </div>
         </section>
 
         <section id="materiais-section" class="max-w-4xl mx-auto px-4 py-16 mt-8">
-          <h2 class="text-2xl font-light text-gray-600 mb-8 border-b pb-2">📂 Materiais de Estudo</h2>
+          <h2 class="text-2xl font-light text-gray-700 mb-8 border-b pb-2">📂 Materiais de Estudo</h2>
           <div class="grid md:grid-cols-2 gap-4">
-            <div class="p-6 bg-gray-50 rounded-lg border border-gray-100">
+            <div class="p-6 bg-white rounded-lg border border-gray-100">
               <h3 class="font-bold text-gray-700 mb-4 flex items-center"><span class="text-2xl mr-2">📘</span> Documentos</h3>
               <ul class="space-y-3">
-                <li><a href="materiais/LIBRAS - Caderno de Atividades.pdf" download class="flex items-center" style="color:var(--accent);">Caderno de Atividades (PDF)</a></li>
-                <li><a href="materiais/LIBRAS - Guia do Aluno.pdf" download class="flex items-center" style="color:var(--accent);">Guia do Aluno (PDF)</a></li>
+                <li><a href="materiais/LIBRAS - Guia do Aluno.pdf" download style="color:var(--jw-green);font-weight:600;">Guia do Aluno (PDF)</a></li>
+                <li><a href="materiais/LIBRAS - Caderno de Atividades.pdf" download style="color:var(--jw-green);font-weight:600;">Caderno de Atividades (PDF)</a></li>
               </ul>
             </div>
           </div>
@@ -366,7 +388,6 @@
       if (user) {
         const ok = await verifySession(user);
         if (!ok) return;
-        // Se não houver token local, registrar (caso login via popup)
         if (!localStorage.getItem("sessionToken")) {
           await registerSession(user);
         }
@@ -377,7 +398,6 @@
           const snap = await getDoc(ref);
           const mustChange = snap.exists() && snap.data().mustChangePassword === true;
           if (mustChange) {
-            // bloquear acesso ao conteúdo principal e abrir modal
             mainContent.classList.add('hidden');
             showChangePassModal(true);
             return;
@@ -392,7 +412,6 @@
         mainContent.classList.remove("hidden");
         setTimeout(() => mainContent.classList.remove("opacity-0"), 100);
       } else {
-        // não autenticado: mostrar overlay
         loginOverlay.classList.remove("hidden");
         mainContent.classList.add("hidden");
         mainContent.classList.add("opacity-0");
@@ -424,7 +443,6 @@
       try {
         const result = await signInWithEmailAndPassword(auth, email, pass);
         await registerSession(result.user);
-        // onAuthStateChanged cuidará da navegação e verificação de mustChangePassword
       } catch (err) {
         showError("E-mail ou senha inválidos.");
         console.error(err);
@@ -441,7 +459,6 @@
         await clearServerSession(user);
         await signOut(auth);
         localStorage.removeItem("sessionToken");
-        // voltar para overlay de login
         loginOverlay.classList.remove('hidden');
         mainContent.classList.add('hidden');
         mainContent.classList.add('opacity-0');
@@ -458,9 +475,7 @@
     btnLogin.addEventListener('mousedown', () => btnLogin.classList.add('btn-pressed'));
     document.addEventListener('mouseup', () => btnLogin.classList.remove('btn-pressed'));
 
-    /* ===========================
-       LÓGICA: TROCAR SENHA (PRIMEIRO ACESSO)
-       =========================== */
+    /* Trocar senha (primeiro acesso) */
     btnChangePass.addEventListener('click', async () => {
       changePassMsg.classList.add('hidden');
       const newPass = newPassInput.value.trim();
@@ -480,21 +495,14 @@
       try {
         const user = auth.currentUser;
         if (!user) throw new Error('Usuário não autenticado.');
-
-        // Tenta atualizar a senha
         await updatePassword(user, newPass);
-
-        // Atualiza Firestore para remover a obrigatoriedade
         await setDoc(doc(db, 'users', user.uid), { mustChangePassword: false }, { merge: true });
-
-        // fechar modal e mostrar conteúdo principal
         showChangePassModal(false);
         loginOverlay.classList.add('hidden');
         mainContent.classList.remove('hidden');
         setTimeout(() => mainContent.classList.remove('opacity-0'), 100);
       } catch (err) {
         console.error('Erro ao alterar senha:', err);
-        // Se precisar reautenticar, tenta pedir a senha atual (UX simples)
         if (err && err.code === 'auth/requires-recent-login') {
           try {
             const user = auth.currentUser;
@@ -521,9 +529,7 @@
       }
     });
 
-    /* ===========================
-       LÓGICA: ESQUECI A SENHA
-       =========================== */
+    /* Esqueci a senha */
     btnForgot.addEventListener('click', (e) => {
       e.preventDefault();
       forgotEmail.value = document.getElementById('email').value || '';
@@ -561,7 +567,7 @@
     changePassModal.addEventListener('click', (e) => { if (e.target === changePassModal) showChangePassModal(false); });
     forgotModal.addEventListener('click', (e) => { if (e.target === forgotModal) showForgotModal(false); });
 
-    // Sidebar toggle for mobile
+    // Sidebar toggle for mobile (se existir)
     if (sidebarToggle && appSidebar) {
       sidebarToggle.addEventListener('click', () => {
         const isHidden = getComputedStyle(appSidebar).display === 'none';
@@ -573,7 +579,6 @@
         else appSidebar.style.display = 'none';
       });
     }
-
   </script>
 </body>
 </html>
