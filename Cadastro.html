@@ -197,7 +197,7 @@
 
                 if (totalInscritos < LIMITE_TURMA_1) {
                     turma_designada = 'Turma 1';
-                    mensagem = 'Inscrição confirmada! Você está na Turma 1.';
+                    mensagem = 'Inscrição confirmada! Você está na Turma 1.Aguarde contato.';
                 } 
                 else if (totalInscritos < LIMITE_TOTAL) {
                     turma_designada = 'Lista de Espera / Turma 2';
@@ -205,7 +205,7 @@
                     msg_cor = 'text-orange-600';
                 } 
                 else {
-                    feedbackMsg.textContent = 'Agradecemos seu intersse, mas no momento as vagas foram encerradas. (Limite de 40 alunos atingido).';
+                    feedbackMsg.textContent = 'Agradecemos seu interesse, mas no momento as vagas foram encerradas. (Limite de 40 alunos atingido).';
                     feedbackMsg.classList.add('text-red-600');
                     return; 
                 }
@@ -238,3 +238,4 @@
 </body>
 
 </html>
+
