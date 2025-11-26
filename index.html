@@ -236,64 +236,123 @@
     const confirmPassInput = document.getElementById('confirm-password');
     const changePassMsg = document.getElementById('change-pass-msg');
 
-    // Sessão única com “assumir sessão” para evitar falso positivo
+    /* ========= Sessão única robusta ========= */
+
+    function nowMs() { return Date.now(); }
     function generateSessionToken() {
-      return Math.random().toString(36).substring(2) + Date.now().toString(36);
+      return Math.random().toString(36).substring(2) + nowMs().toString(36);
     }
 
-    async function registerSession(user) {
-      const token = generateSessionToken();
-      const ref = doc(db, "users", user.uid);
+    async function getSessionInfo(user) {
       try {
-        await setDoc(ref, {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (!snap.exists()) return null;
+        const d = snap.data();
+        return {
+          token: d.sessionToken || null,
+          updatedAt: typeof d.sessionUpdatedAt === 'number' ? d.sessionUpdatedAt : null,
+          mustChangePassword: d.mustChangePassword === true
+        };
+      } catch (e) {
+        console.warn("getSessionInfo erro:", e);
+        return null;
+      }
+    }
+
+    async function registerSession(user, forceToken) {
+      const token = forceToken || generateSessionToken();
+      const updatedAt = nowMs();
+      try {
+        await setDoc(doc(db, "users", user.uid), {
           email: user.email,
           tipo: "aluno",
           sessionToken: token,
-          sessionUpdatedAt: Date.now()
+          sessionUpdatedAt: updatedAt
         }, { merge: true });
         localStorage.setItem("sessionToken", token);
-        return token;
+        localStorage.setItem("sessionUpdatedAt", String(updatedAt));
+        return { token, updatedAt };
       } catch (err) {
         console.warn("Erro ao registrar sessão:", err);
         return null;
       }
     }
 
+    async function syncSession(user) {
+      // grava local -> servidor, confirma leitura e retry único se necessário
+      const first = await registerSession(user);
+      if (!first) return { ok: false, reason: "register_failed" };
+
+      // pequena espera para consistência
+      await new Promise(r => setTimeout(r, 200));
+
+      const srv1 = await getSessionInfo(user);
+      if (srv1 && srv1.token === first.token) {
+        return { ok: true };
+      }
+
+      // retry único
+      const retry = await registerSession(user, first.token);
+      await new Promise(r => setTimeout(r, 200));
+      const srv2 = await getSessionInfo(user);
+
+      if (srv2 && srv2.token === first.token) {
+        return { ok: true };
+      }
+
+      // Não conseguimos alinhar; ajustar local para servidor para não travar
+      if (srv2 && srv2.token) {
+        localStorage.setItem("sessionToken", srv2.token);
+        localStorage.setItem("sessionUpdatedAt", String(srv2.updatedAt || nowMs()));
+      }
+      return { ok: true }; // não travar login
+    }
+
     async function verifySession(user) {
+      // Compara local vs servidor com margem de tempo
       try {
-        const local = localStorage.getItem("sessionToken");
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
+        const localToken = localStorage.getItem("sessionToken");
+        const localAt = Number(localStorage.getItem("sessionUpdatedAt") || "0");
+        const srv = await getSessionInfo(user);
 
-        // Documento ausente ou sem token: registrar agora
-        if (!snap.exists()) {
-          await registerSession(user);
-          return { ok: true };
+        if (!srv || !srv.token) {
+          // servidor sem doc/token: registrar
+          const res = await syncSession(user);
+          return res.ok ? { ok: true, mustChange: srv ? srv.mustChangePassword === true : false } : { ok: false };
         }
-        const data = snap.data();
-        const server = data.sessionToken || null;
 
-        if (!server) {
-          await registerSession(user);
-          return { ok: true };
+        if (!localToken) {
+          // sem token local: alinhar
+          localStorage.setItem("sessionToken", srv.token);
+          localStorage.setItem("sessionUpdatedAt", String(srv.updatedAt || nowMs()));
+          return { ok: true, mustChange: srv.mustChangePassword === true };
         }
-        if (!local) {
-          await registerSession(user);
-          return { ok: true };
+
+        if (srv.token === localToken) {
+          return { ok: true, mustChange: srv.mustChangePassword === true };
         }
-        if (server === local) {
-          return { ok: true };
+
+        // Tokens diferentes: verificar quem é mais recente
+        const srvAt = Number(srv.updatedAt || 0);
+        const marginMs = 3000; // margem de 3s para evitar falso positivo
+
+        if (srvAt > localAt + marginMs) {
+          // servidor claramente mais recente -> sessão concorrente real
+          return { ok: false, concurrent: true };
+        } else {
+          // diferença pequena ou local mais recente -> alinhar servidor para local
+          await registerSession(user, localToken);
+          return { ok: true, mustChange: srv.mustChangePassword === true };
         }
-        // Tokens diferentes: possível sessão concorrente
-        return { ok: false, serverToken: server, localToken: local };
       } catch (err) {
-        console.warn("Erro em verifySession:", err);
-        // Em caso de erro, não travar o login
+        console.warn("verifySession erro:", err);
+        // Em qualquer erro, não travar login
         return { ok: true };
       }
     }
 
-    // Modais helpers
+    /* ========= Modais helpers ========= */
+
     function showChangePassModal(show = true) {
       changePassModal.classList.toggle('hidden', !show);
       changePassModal.setAttribute('aria-hidden', String(!show));
@@ -308,26 +367,25 @@
       setTimeout(() => loginMsg.classList.add("hidden"), 6000);
     }
 
-    // Auth state com ordem corrigida e “assumir sessão”
+    /* ========= Auth flow ========= */
+
     onAuthStateChanged(auth, async user => {
       if (user) {
-        // 1) Garante token local/servidor
-        if (!localStorage.getItem("sessionToken")) {
-          const token = await registerSession(user);
-          if (!token) {
-            showError("Erro ao registrar sessão. Tente novamente.");
-            await signOut(auth);
-            return;
-          }
+        // 1) garantir sessão local/servidor
+        const syncOk = await syncSession(user);
+        if (!syncOk.ok) {
+          showError("Erro ao preparar sessão. Tente novamente.");
+          await signOut(auth);
+          return;
         }
 
-        // 2) Verifica conflito
+        // 2) verificar conflito real (com margem)
         const check = await verifySession(user);
-        if (!check.ok) {
+        if (!check.ok && check.concurrent) {
           const assumir = confirm("Sua conta está ativa em outro dispositivo. Deseja assumir esta sessão aqui?");
           if (assumir) {
-            const token = await registerSession(user); // sobrescreve servidor com o novo token local
-            if (!token) {
+            const res = await syncSession(user); // sobrescreve servidor com local
+            if (!res.ok) {
               showError("Não consegui assumir a sessão. Tente novamente.");
               await signOut(auth);
               return;
@@ -335,6 +393,7 @@
           } else {
             await signOut(auth);
             localStorage.removeItem("sessionToken");
+            localStorage.removeItem("sessionUpdatedAt");
             loginOverlay.classList.remove("hidden");
             mainContent.classList.add("hidden");
             mainContent.classList.add("opacity-0");
@@ -342,11 +401,10 @@
           }
         }
 
-        // 3) Força troca de senha se necessário
+        // 3) força troca de senha se necessário
         try {
-          const ref = doc(db, 'users', user.uid);
-          const snap = await getDoc(ref);
-          const mustChange = snap.exists() && snap.data().mustChangePassword === true;
+          const srv = await getSessionInfo(user);
+          const mustChange = !!(srv && srv.mustChangePassword);
           if (mustChange) {
             mainContent.classList.add('hidden');
             showChangePassModal(true);
@@ -356,7 +414,7 @@
           console.warn('Erro ao verificar mustChangePassword', err);
         }
 
-        // 4) Libera UI
+        // 4) liberar UI
         showChangePassModal(false);
         loginOverlay.classList.add("hidden");
         mainContent.classList.remove("hidden");
@@ -373,7 +431,7 @@
       try {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        await registerSession(result.user);
+        await syncSession(result.user);
       } catch (err) {
         showError("Erro ao entrar com Google.");
         console.error(err);
@@ -392,7 +450,7 @@
       }
       try {
         const result = await signInWithEmailAndPassword(auth, email, pass);
-        await registerSession(result.user);
+        await syncSession(result.user);
       } catch (err) {
         showError("E-mail ou senha inválidos.");
         console.error(err);
@@ -415,6 +473,7 @@
           console.warn('Erro no logout:', err);
         } finally {
           localStorage.removeItem("sessionToken");
+          localStorage.removeItem("sessionUpdatedAt");
           loginOverlay.classList.remove('hidden');
           mainContent.classList.add('hidden');
           mainContent.classList.add('opacity-0');
