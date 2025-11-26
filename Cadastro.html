@@ -136,12 +136,21 @@
         // 1. Lógica da Máscara de Telefone (Formatação)
         function maskPhone(value) {
             if (!value) return "";
-            value = value.replace(/\D/g, ""); // Remove tudo que não é dígito
-            value = value.replace(/^(\d{2})(\d)/g, "($1) $2"); // (99) 9
-            value = value.replace(/(\d{4})(\d)/, "$1-$2"); // (99) 9999-
-            value = value.replace(/(\d{5})[-](\d{4})/, "$1-$2"); // Mantém o formato (99) 99999-9999
+            value = value.replace(/\D/g, ""); // Remove tudo que não é dígito (Ex: 11999999999)
+    
+            // 1. Adiciona o DDD: (99) 9...
+            value = value.replace(/^(\d{2})(\d)/g, "($1) $2"); 
+    
+            // 2. CORREÇÃO: Insere o hífen após o 5º dígito do número principal: (99) 99999-...
+            value = value.replace(/(\d{5})(\d)/, "$1-$2"); 
+    
+            // Opcional: Limita a 15 caracteres (Ex: (99) 99999-9999 é 15 caracteres)
+            if (value.length > 15) {
+                value = value.substring(0, 15);
+            }
+    
             return value;
-        }
+       }
 
         // 2. Validação do Comprimento do Telefone
         function isValidPhone(value) {
@@ -301,4 +310,5 @@
     </script>
 </body>
 </html>
+
 
