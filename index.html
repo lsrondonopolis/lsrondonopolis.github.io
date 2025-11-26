@@ -1,649 +1,663 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LIBRAS - Curso Online</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --jw-green: #449D44;
-      --jw-red: #C9302C;
-      --jw-background: #F0F0EE;
-      --jw-dark: #333333;
-      --card-border: #d1d5db;
-    }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LIBRAS - Curso Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --jw-green: #449D44;
+      --jw-red: #C9302C;
+      --jw-background: #F0F0EE;
+      --jw-dark: #333333;
+      --card-border: #d1d5db;
+    }
 
-    html, body { height:100%; margin:0; }
-    body {
-      font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--jw-background);
-      color: var(--jw-dark);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+    html, body { height:100%; margin:0; }
+    body {
+      font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--jw-background);
+      color: var(--jw-dark);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
-    /* Cabeçalho escuro */
-    .site-header {
-      background-color: var(--jw-dark);
-      color: #fff;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .site-title { font-weight:700; font-size:1rem; letter-spacing:.02em; }
-    .site-title span { font-style:italic; font-weight:600; opacity:.9; }
-    .header-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
-    .sidebar-toggle { background:var(--jw-green); color:#fff; padding:6px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
-    .btn-logout { background:var(--jw-red); color:#fff; padding:6px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+    /* Cabeçalho escuro */
+    .site-header {
+      background-color: var(--jw-dark);
+      color: #fff;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-title { font-weight:700; font-size:1rem; letter-spacing:.02em; }
+    .site-title span { font-style:italic; font-weight:600; opacity:.9; }
+    .header-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
+    .sidebar-toggle { background:var(--jw-green); color:#fff; padding:6px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+    .btn-logout { background:var(--jw-red); color:#fff; padding:6px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
 
-    /* Login overlay */
-    #login-overlay {
-      position: fixed; inset:0;
-      background-color: rgba(240,240,238,0.98);
-      z-index: 1200;
-      display:flex; justify-content:center; align-items:center;
-    }
-    .card { background:#fff; border:1px solid var(--card-border); border-radius:10px; box-shadow:0 6px 18px rgba(2,6,23,0.04); }
-    .input { width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; margin-bottom:0.75rem; }
-    .btn-login {
-      width:100%; background-color: var(--jw-green); color:#fff;
-      font-weight:700; padding:0.75rem; border-radius:8px; border:none; cursor:pointer;
-      transition: background-color .12s ease, transform .06s ease;
-    }
-    .btn-login.btn-pressed { background-color: #2f7a2f; transform: translateY(1px); }
-    .btn-ghost { background:#fff; border:1px solid var(--card-border); padding:0.5rem 0.75rem; border-radius:8px; cursor:pointer; }
+    /* Login overlay */
+    #login-overlay {
+      position: fixed; inset:0;
+      background-color: rgba(240,240,238,0.98);
+      z-index: 1200;
+      display:flex; justify-content:center; align-items:center;
+    }
+    .card { background:#fff; border:1px solid var(--card-border); border-radius:10px; box-shadow:0 6px 18px rgba(2,6,23,0.04); }
+    .input { width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; margin-bottom:0.75rem; }
+    .btn-login {
+      width:100%; background-color: var(--jw-green); color:#fff;
+      font-weight:700; padding:0.75rem; border-radius:8px; border:none; cursor:pointer;
+      transition: background-color .12s ease, transform .06s ease;
+    }
+    .btn-login.btn-pressed { background-color: #2f7a2f; transform: translateY(1px); }
+    .btn-ghost { background:#fff; border:1px solid var(--card-border); padding:0.5rem 0.75rem; border-radius:8px; cursor:pointer; }
 
-    /* Layout principal */
-    .app-shell { display:flex; gap:24px; max-width:1200px; margin:0 auto; padding:24px; align-items:flex-start; }
-    .sidebar {
-      width:260px; background:#fff; border:1px solid var(--card-border);
-      border-radius:10px; padding:12px;
-    }
+    /* Layout principal */
+    .app-shell { display:flex; gap:24px; max-width:1200px; margin:0 auto; padding:24px; align-items:flex-start; }
+    .sidebar {
+      width:260px; background:#fff; border:1px solid var(--card-border);
+      border-radius:10px; padding:12px;
+    }
 
-    /* Sidebar titles (as buttons) */
-    .sidebar-section-toggle {
-      display:block;
-      width:100%;
-      text-align:center;
-      background:transparent;
-      border:none;
-      padding:8px 6px;
-      font-weight:700;           /* negrito */
-      font-style:italic;         /* itálico */
-      text-decoration: underline;/* sublinhado */
-      color:var(--jw-dark);
-      cursor:pointer;
-      border-radius:6px;
-    }
-    .sidebar-section-toggle:focus { outline:2px solid rgba(68,157,68,0.18); outline-offset:2px; }
+    /* Sidebar titles (as buttons) */
+    .sidebar-section-toggle {
+      display:block;
+      width:100%;
+      text-align:center;
+      background:transparent;
+      border:none;
+      padding:8px 6px;
+      font-weight:700;           /* negrito */
+      font-style:italic;         /* itálico */
+      text-decoration: underline;/* sublinhado */
+      color:var(--jw-dark);
+      cursor:pointer;
+      border-radius:6px;
+    }
+    .sidebar-section-toggle:focus { outline:2px solid rgba(68,157,68,0.18); outline-offset:2px; }
 
-    .sidebar-section {
-      margin-top:6px;
-      margin-bottom:12px;
-    }
+    .sidebar-section {
+      margin-top:6px;
+      margin-bottom:12px;
+    }
 
-    .sidebar-list {
-      list-style:none; padding-left:0; margin:6px 0 0 0;
-      transition: max-height .18s ease;
-      overflow:hidden;
-    }
-    .sidebar-list li { margin:6px 0; }
-    .sidebar-list a {
-      display:block; padding:8px 10px; border-radius:6px; color:var(--jw-dark); text-decoration:none; font-weight:600;
-    }
-    .sidebar-list a:hover { background: rgba(68,157,68,0.06); color:var(--jw-green); }
+    .sidebar-list {
+      list-style:none; padding-left:0; margin:6px 0 0 0;
+      transition: max-height .18s ease;
+      overflow:hidden;
+    }
+    .sidebar-list li { margin:6px 0; }
+    .sidebar-list a {
+      display:block; padding:8px 10px; border-radius:6px; color:var(--jw-dark); text-decoration:none; font-weight:600;
+    }
+    .sidebar-list a:hover { background: rgba(68,157,68,0.06); color:var(--jw-green); }
 
-    /* Content area */
-    .content-area { flex:1; }
+    /* Content area */
+    .content-area { flex:1; }
 
-    /* Cards centrais */
-    .tool-card {
-      border:1px solid var(--card-border); background:#fff; border-radius:12px;
-      padding:18px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;
-      transition: transform .12s ease, box-shadow .12s ease;
-    }
-    .tool-card:hover { transform: translateY(-6px); box-shadow:0 12px 30px rgba(2,6,23,0.06); }
-    .tool-card img { width:100%; max-width:260px; height:140px; object-fit:contain; border-radius:8px; }
-    .tool-title { font-weight:700; color:var(--jw-dark); }
+    /* Cards centrais */
+    .tool-card {
+      border:1px solid var(--card-border); background:#fff; border-radius:12px;
+      padding:18px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .tool-card:hover { transform: translateY(-6px); box-shadow:0 12px 30px rgba(2,6,23,0.06); }
+    .tool-card img { width:100%; max-width:260px; height:140px; object-fit:contain; border-radius:8px; }
+    .tool-title { font-weight:700; color:var(--jw-dark); }
 
-    footer { color:#94a3b8; padding:24px; text-align:center; }
+    footer { color:#94a3b8; padding:24px; text-align:center; }
 
-    /* Modais */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:2000; }
-    .modal-card { background:#fff; padding:1.25rem; border-radius:0.5rem; width:100%; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,0.12); }
-    .text-error { color:var(--jw-red); font-size:0.9rem; margin-top:0.5rem; }
-    .text-success { color:var(--jw-green); font-size:0.9rem; margin-top:0.5rem; }
+    /* Modais */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:2000; }
+    .modal-card { background:#fff; padding:1.25rem; border-radius:0.5rem; width:100%; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,0.12); }
+    .text-error { color:var(--jw-red); font-size:0.9rem; margin-top:0.5rem; }
+    .text-success { color:var(--jw-green); font-size:0.9rem; margin-top:0.5rem; }
 
-    .hidden { display:none !important; }
-    .opacity-0 { opacity:0; }
+    .hidden { display:none !important; }
+    .opacity-0 { opacity:0; }
 
-    /* Responsivo */
-    @media (max-width:900px) {
-      .app-shell { padding:12px; flex-direction:column; }
-      .sidebar { display:none; width:100%; }
-      .tool-card img { max-width:100%; height:120px; }
-    }
-  </style>
+    /* Responsivo */
+    @media (max-width:900px) {
+      .app-shell { padding:12px; flex-direction:column; }
+      .sidebar { display:none; width:100%; }
+      .tool-card img { max-width:100%; height:120px; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- LOGIN OVERLAY -->
-  <div id="login-overlay">
-    <div class="card p-8 w-full max-w-md text-center">
-      <h2 class="text-3xl font-light mb-2" style="color:var(--jw-dark)">LIBRAS</h2>
-      <p class="text-gray-600 mb-8 text-sm uppercase tracking-wider">Acesso ao Curso</p>
-
-      <div class="space-y-3 text-left">
-        <label class="text-xs font-bold text-gray-600 ml-1">E-MAIL</label>
-        <input type="email" id="email" class="input" autocomplete="username">
-        <label class="text-xs font-bold text-gray-600 ml-1">SENHA</label>
-        <input type="password" id="password" class="input" autocomplete="current-password">
-        <button id="btn-login-email" class="btn-login" type="button">ENTRAR</button>
-
-        <!-- Google centralizado (sem Apple) -->
-        <div class="mt-6 flex justify-center">
-          <button id="btn-login-google" class="btn-ghost flex items-center justify-center text-sm">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 mr-2" alt=""> Google
-          </button>
-        </div>
-
-        <div class="text-center mt-3">
-          <button id="btn-forgot" class="text-sm text-blue-600 underline">Esqueci a senha</button>
-        </div>
-      </div>
-
-      <p id="login-msg" class="mt-4 text-sm text-red-500 font-semibold hidden"></p>
-    </div>
+  <div id="loading-spinner" class="flex justify-center items-center min-h-screen fixed inset-0 z-[3000] bg-white">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-4 border-green-600"></div>
+    <p class="ml-3 text-gray-600">Carregando autenticação...</p>
   </div>
+  
+    <div id="login-overlay" class="hidden">
+    <div class="card p-8 w-full max-w-md text-center">
+      <h2 class="text-3xl font-light mb-2" style="color:var(--jw-dark)">LIBRAS</h2>
+      <p class="text-gray-600 mb-8 text-sm uppercase tracking-wider">Acesso ao Curso</p>
 
-  <!-- CONTEÚDO PRINCIPAL -->
-  <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 ease-in">
-    <header class="site-header">
-      <div class="site-title">LIBRAS — <span>Sessões de Treino</span></div>
-      <div class="header-actions">
-        <button id="sidebar-toggle" class="sidebar-toggle" aria-controls="app-sidebar" aria-expanded="false">Menu</button>
-        <button id="btn-logout" class="btn-logout">Sair</button>
-      </div>
-    </header>
+      <div class="space-y-3 text-left">
+        <label class="text-xs font-bold text-gray-600 ml-1">E-MAIL</label>
+        <input type="email" id="email" class="input" autocomplete="username">
+        <label class="text-xs font-bold text-gray-600 ml-1">SENHA</label>
+        <input type="password" id="password" class="input" autocomplete="current-password">
+        <button id="btn-login-email" class="btn-login" type="button">ENTRAR</button>
 
-    <div class="app-shell">
-      <!-- SIDEBAR com seções colapsáveis -->
-      <aside class="sidebar" id="app-sidebar" aria-label="Menu principal">
-        <!-- Atividades -->
-        <div class="sidebar-section" id="section-atividades">
-          <button class="sidebar-section-toggle" aria-expanded="false" data-target="atividades-list">Atividades</button>
-          <ul id="atividades-list" class="sidebar-list" style="max-height:0;">
-            <li><a href="Soletracao.html">Soletrando</a></li>
-            <li><a href="Associacao.html">Combinações</a></li>
-            <li><a href="Frases.html">Frases</a></li>
-          </ul>
-        </div>
+                <div class="mt-6 flex justify-center">
+          <button id="btn-login-google" class="btn-ghost flex items-center justify-center text-sm">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 mr-2" alt=""> Google
+          </button>
+        </div>
 
-        <!-- Material de apoio -->
-        <div class="sidebar-section" id="section-material">
-          <button class="sidebar-section-toggle" aria-expanded="false" data-target="material-list">Material de apoio</button>
-          <ul id="material-list" class="sidebar-list" style="max-height:0;">
-            <li><a href="materiais/LIBRAS - Guia do Aluno.pdf" download>Guia do Aluno</a></li>
-            <li><a href="materiais/LIBRAS - Caderno de Atividades.pdf" download>Caderno de Atividades</a></li>
-          </ul>
-        </div>
-      </aside>
+        <div class="text-center mt-3">
+          <button id="btn-forgot" class="text-sm text-blue-600 underline">Esqueci a senha</button>
+        </div>
+      </div>
 
-      <!-- ÁREA DE CONTEÚDO -->
-      <main class="content-area">
-        <header class="py-6 px-4">
-          <h1 class="text-3xl md:text-4xl font-light" style="color:var(--jw-dark)">Bem-vindo às ferramentas do curso de LIBRAS!</h1>
-          <div class="w-full h-px bg-gray-200 mt-4"></div>
-        </header>
+      <p id="login-msg" class="mt-4 text-sm text-red-500 font-semibold hidden"></p>
+    </div>
+  </div>
 
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 py-4">
-          <a href="Soletracao.html" class="tool-card">
-            <img src="assets/img_soletracao.png" alt="Soletrando" onerror="this.src='https://placehold.co/300x200/png?text=Soletrando'">
-            <h3 class="tool-title">Soletrando</h3>
-          </a>
-          <a href="Associacao.html" class="tool-card">
-            <img src="assets/img_associacao.png" alt="Combinações" onerror="this.src='https://placehold.co/300x200/png?text=Combinacoes'">
-            <h3 class="tool-title">Combinações</h3>
-          </a>
-          <a href="Frases.html" class="tool-card">
-            <img src="assets/img_frases.png" alt="Frases" onerror="this.src='https://placehold.co/300x200/png?text=Frases'">
-            <h3 class="tool-title">Frases</h3>
-          </a>
-        </section>
-      </main>
-    </div>
+    <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 ease-in">
+    <header class="site-header">
+      <div class="site-title">LIBRAS — <span>Sessões de Treino</span></div>
+      <div class="header-actions">
+        <button id="sidebar-toggle" class="sidebar-toggle" aria-controls="app-sidebar" aria-expanded="false">Menu</button>
+        <button id="btn-logout" class="btn-logout">Sair</button>
+      </div>
+    </header>
 
-    <footer>&copy; 2025 Curso LIBRAS LS-Roo</footer>
-  </div>
+    <div class="app-shell">
+            <aside class="sidebar" id="app-sidebar" aria-label="Menu principal">
+                <div class="sidebar-section" id="section-atividades">
+          <button class="sidebar-section-toggle" aria-expanded="false" data-target="atividades-list">Atividades</button>
+          <ul id="atividades-list" class="sidebar-list" style="max-height:0;">
+            <li><a href="Soletracao.html">Soletrando</a></li>
+            <li><a href="Associacao.html">Combinações</a></li>
+            <li><a href="Frases.html">Frases</a></li>
+          </ul>
+        </div>
 
-  <!-- MODAIS (troca senha / esqueci) -->
-  <div id="change-pass-modal" class="modal-backdrop hidden" aria-hidden="true">
-    <div class="modal-card">
-      <h3 class="text-lg font-semibold mb-2">Alterar senha (primeiro acesso)</h3>
-      <p class="text-sm text-gray-600 mb-4">Você recebeu uma senha provisória. Crie uma nova senha para continuar.</p>
-      <input id="new-password" type="password" placeholder="Nova senha" class="input" />
-      <input id="confirm-password" type="password" placeholder="Confirme a nova senha" class="input" />
-      <div class="flex justify-end gap-2">
-        <button id="btn-change-pass" class="btn-login" style="width:auto;">Alterar</button>
-      </div>
-      <p id="change-pass-msg" class="text-error hidden"></p>
-    </div>
-  </div>
+                <div class="sidebar-section" id="section-material">
+          <button class="sidebar-section-toggle" aria-expanded="false" data-target="material-list">Material de apoio</button>
+          <ul id="material-list" class="sidebar-list" style="max-height:0;">
+            <li><a href="materiais/LIBRAS - Guia do Aluno.pdf" download>Guia do Aluno</a></li>
+            <li><a href="materiais/LIBRAS - Caderno de Atividades.pdf" download>Caderno de Atividades</a></li>
+          </ul>
+        </div>
+      </aside>
 
-  <div id="forgot-modal" class="modal-backdrop hidden" aria-hidden="true">
-    <div class="modal-card">
-      <h3 class="text-lg font-semibold mb-2">Redefinir senha</h3>
-      <p class="text-sm text-gray-600 mb-4">Informe seu e-mail para receber o link de redefinição.</p>
-      <input id="forgot-email" type="email" placeholder="Seu e-mail" class="input" />
-      <div class="flex justify-end gap-2">
-        <button id="btn-send-reset" class="btn-ghost" style="border-color:var(--jw-green);">Enviar link</button>
-      </div>
-      <p id="forgot-msg" class="text-success hidden"></p>
-    </div>
-  </div>
+            <main class="content-area">
+        <header class="py-6 px-4">
+          <h1 class="text-3xl md:text-4xl font-light" style="color:var(--jw-dark)">Bem-vindo às ferramentas do curso de LIBRAS!</h1>
+          <div class="w-full h-px bg-gray-200 mt-4"></div>
+        </header>
 
-  <!-- SCRIPT FIREBASE E LÓGICA -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getAuth, onAuthStateChanged, signInWithPopup,
-      signInWithEmailAndPassword, signOut, GoogleAuthProvider,
-      sendPasswordResetEmail, updatePassword,
-      EmailAuthProvider, reauthenticateWithCredential
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 py-4">
+          <a href="Soletracao.html" class="tool-card">
+            <img src="assets/img_soletracao.png" alt="Soletrando" onerror="this.src='https://placehold.co/300x200/png?text=Soletrando'">
+            <h3 class="tool-title">Soletrando</h3>
+          </a>
+          <a href="Associacao.html" class="tool-card">
+            <img src="assets/img_associacao.png" alt="Combinações" onerror="this.src='https://placehold.co/300x200/png?text=Combinacoes'">
+            <h3 class="tool-title">Combinações</h3>
+          </a>
+          <a href="Frases.html" class="tool-card">
+            <img src="assets/img_frases.png" alt="Frases" onerror="this.src='https://placehold.co/300x200/png?text=Frases'">
+            <h3 class="tool-title">Frases</h3>
+          </a>
+        </section>
+      </main>
+    </div>
 
-    // Config Firebase (ajuste se necessário)
-    const firebaseConfig = {
-      apiKey: "AIzaSyCvWBG_dk-3puP04otTBk8TY68-evcEnOQ",
-      authDomain: "curso-libras-lsroo.firebaseapp.com",
-      projectId: "curso-libras-lsroo",
-      storageBucket: "curso-libras-lsroo.appspot.com",
-      messagingSenderId: "886224564724",
-      appId: "1:886224564724:web:02ef42f077e2b2bd1f49a1"
-    };
+    <footer>&copy; 2025 Curso LIBRAS LS-Roo</footer>
+  </div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    <div id="change-pass-modal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card">
+      <h3 class="text-lg font-semibold mb-2">Alterar senha (primeiro acesso)</h3>
+      <p class="text-sm text-gray-600 mb-4">Você recebeu uma senha provisória. Crie uma nova senha para continuar.</p>
+      <input id="new-password" type="password" placeholder="Nova senha" class="input" />
+      <input id="confirm-password" type="password" placeholder="Confirme a nova senha" class="input" />
+      <div class="flex justify-end gap-2">
+        <button id="btn-change-pass" class="btn-login" style="width:auto;">Alterar</button>
+      </div>
+      <p id="change-pass-msg" class="text-error hidden"></p>
+    </div>
+  </div>
 
-    // DOM refs
-    const loginOverlay = document.getElementById('login-overlay');
-    const mainContent  = document.getElementById('main-content');
-    const loginMsg     = document.getElementById('login-msg');
-    const btnLogin     = document.getElementById('btn-login-email');
+  <div id="forgot-modal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card">
+      <h3 class="text-lg font-semibold mb-2">Redefinir senha</h3>
+      <p class="text-sm text-gray-600 mb-4">Informe seu e-mail para receber o link de redefinição.</p>
+      <input id="forgot-email" type="email" placeholder="Seu e-mail" class="input" />
+      <div class="flex justify-end gap-2">
+        <button id="btn-send-reset" class="btn-ghost" style="border-color:var(--jw-green);">Enviar link</button>
+      </div>
+      <p id="forgot-msg" class="text-success hidden"></p>
+    </div>
+  </div>
 
-    const btnForgot = document.getElementById('btn-forgot');
-    const forgotModal = document.getElementById('forgot-modal');
-    const btnSendReset = document.getElementById('btn-send-reset');
-    const forgotEmail = document.getElementById('forgot-email');
-    const forgotMsg = document.getElementById('forgot-msg');
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithPopup,
+      signInWithEmailAndPassword, signOut, GoogleAuthProvider,
+      sendPasswordResetEmail, updatePassword,
+      EmailAuthProvider, reauthenticateWithCredential
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const changePassModal = document.getElementById('change-pass-modal');
-    const btnChangePass = document.getElementById('btn-change-pass');
-    const newPassInput = document.getElementById('new-password');
-    const confirmPassInput = document.getElementById('confirm-password');
-    const changePassMsg = document.getElementById('change-pass-msg');
+    // Config Firebase (ajuste se necessário)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCvWBG_dk-3puP04otTBk8TY68-evcEnOQ",
+      authDomain: "curso-libras-lsroo.firebaseapp.com",
+      projectId: "curso-libras-lsroo",
+      storageBucket: "curso-libras-lsroo.appspot.com",
+      messagingSenderId: "886224564724",
+      appId: "1:886224564724:web:02ef42f077e2b2bd1f49a1"
+    };
 
-    // Sidebar toggle (mobile) and section toggles
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const appSidebar = document.getElementById('app-sidebar');
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    function updateSidebarVisibility() {
-      const isMobile = window.innerWidth <= 900;
-      if (isMobile) {
-        appSidebar.style.display = 'none';
-        sidebarToggle?.setAttribute('aria-expanded', 'false');
-      } else {
-        appSidebar.style.display = 'block';
-        sidebarToggle?.setAttribute('aria-expanded', 'true');
-      }
-    }
-    updateSidebarVisibility();
-    window.addEventListener('resize', updateSidebarVisibility);
-    sidebarToggle?.addEventListener('click', () => {
-      const visible = appSidebar.style.display !== 'none';
-      appSidebar.style.display = visible ? 'none' : 'block';
-      sidebarToggle.setAttribute('aria-expanded', visible ? 'false' : 'true');
-    });
+    // DOM refs
+    const loginOverlay = document.getElementById('login-overlay');
+    const mainContent  = document.getElementById('main-content');
+    const loginMsg     = document.getElementById('login-msg');
+    const btnLogin     = document.getElementById('btn-login-email');
+    // 2. NOVO: Referência ao spinner
+    const loadingSpinner = document.getElementById('loading-spinner');
 
-    // Section toggles: expand/collapse with smooth max-height
-    document.querySelectorAll('.sidebar-section-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-target');
-        const list = document.getElementById(targetId);
-        const expanded = btn.getAttribute('aria-expanded') === 'true';
-        if (!list) return;
-        if (expanded) {
-          // collapse
-          list.style.maxHeight = '0';
-          btn.setAttribute('aria-expanded', 'false');
-        } else {
-          // expand: set maxHeight to scrollHeight px
-          list.style.maxHeight = list.scrollHeight + 'px';
-          btn.setAttribute('aria-expanded', 'true');
-        }
-      });
+    const btnForgot = document.getElementById('btn-forgot');
+    const forgotModal = document.getElementById('forgot-modal');
+    const btnSendReset = document.getElementById('btn-send-reset');
+    const forgotEmail = document.getElementById('forgot-email');
+    const forgotMsg = document.getElementById('forgot-msg');
 
-      // Initialize collapsed (ensure aria reflects state)
-      const targetIdInit = btn.getAttribute('data-target');
-      const listInit = document.getElementById(targetIdInit);
-      if (listInit) {
-        listInit.style.maxHeight = '0';
-        btn.setAttribute('aria-expanded', 'false');
-      }
-    });
+    const changePassModal = document.getElementById('change-pass-modal');
+    const btnChangePass = document.getElementById('btn-change-pass');
+    const newPassInput = document.getElementById('new-password');
+    const confirmPassInput = document.getElementById('confirm-password');
+    const changePassMsg = document.getElementById('change-pass-msg');
 
-    /* ========= Sessão única robusta (mantive a lógica que você validou) ========= */
+    // Sidebar toggle (mobile) and section toggles
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const appSidebar = document.getElementById('app-sidebar');
 
-    function nowMs() { return Date.now(); }
-    function generateSessionToken() {
-      return Math.random().toString(36).substring(2) + nowMs().toString(36);
-    }
+    function updateSidebarVisibility() {
+      const isMobile = window.innerWidth <= 900;
+      if (isMobile) {
+        appSidebar.style.display = 'none';
+        sidebarToggle?.setAttribute('aria-expanded', 'false');
+      } else {
+        appSidebar.style.display = 'block';
+        sidebarToggle?.setAttribute('aria-expanded', 'true');
+      }
+    }
+    updateSidebarVisibility();
+    window.addEventListener('resize', updateSidebarVisibility);
+    sidebarToggle?.addEventListener('click', () => {
+      const visible = appSidebar.style.display !== 'none';
+      appSidebar.style.display = visible ? 'none' : 'block';
+      sidebarToggle.setAttribute('aria-expanded', visible ? 'false' : 'true');
+    });
 
-    async function getSessionInfo(user) {
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (!snap.exists()) return null;
-        const d = snap.data();
-        return {
-          token: d.sessionToken || null,
-          updatedAt: typeof d.sessionUpdatedAt === 'number' ? d.sessionUpdatedAt : null,
-          mustChangePassword: d.mustChangePassword === true
-        };
-      } catch (e) {
-        console.warn("getSessionInfo erro:", e);
-        return null;
-      }
-    }
+    // Section toggles: expand/collapse with smooth max-height
+    document.querySelectorAll('.sidebar-section-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        const list = document.getElementById(targetId);
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        if (!list) return;
+        if (expanded) {
+          // collapse
+          list.style.maxHeight = '0';
+          btn.setAttribute('aria-expanded', 'false');
+        } else {
+          // expand: set maxHeight to scrollHeight px
+          list.style.maxHeight = list.scrollHeight + 'px';
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
 
-    async function registerSession(user, forceToken) {
-      const token = forceToken || generateSessionToken();
-      const updatedAt = nowMs();
-      try {
-        await setDoc(doc(db, "users", user.uid), {
-          email: user.email,
-          tipo: "aluno",
-          sessionToken: token,
-          sessionUpdatedAt: updatedAt
-        }, { merge: true });
-        localStorage.setItem("sessionToken", token);
-        localStorage.setItem("sessionUpdatedAt", String(updatedAt));
-        return { token, updatedAt };
-      } catch (err) {
-        console.warn("Erro ao registrar sessão:", err);
-        return null;
-      }
-    }
+      // Initialize collapsed (ensure aria reflects state)
+      const targetIdInit = btn.getAttribute('data-target');
+      const listInit = document.getElementById(targetIdInit);
+      if (listInit) {
+        listInit.style.maxHeight = '0';
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
 
-    async function syncSession(user) {
-      const first = await registerSession(user);
-      if (!first) return { ok: false, reason: "register_failed" };
-      await new Promise(r => setTimeout(r, 200));
-      const srv1 = await getSessionInfo(user);
-      if (srv1 && srv1.token === first.token) return { ok: true };
-      await registerSession(user, first.token);
-      await new Promise(r => setTimeout(r, 200));
-      const srv2 = await getSessionInfo(user);
-      if (srv2 && srv2.token === first.token) return { ok: true };
-      if (srv2 && srv2.token) {
-        localStorage.setItem("sessionToken", srv2.token);
-        localStorage.setItem("sessionUpdatedAt", String(srv2.updatedAt || nowMs()));
-      }
-      return { ok: true };
-    }
+    /* ========= Sessão única robusta (mantive a lógica que você validou) ========= */
 
-    async function verifySession(user) {
-      try {
-        const localToken = localStorage.getItem("sessionToken");
-        const localAt = Number(localStorage.getItem("sessionUpdatedAt") || "0");
-        const srv = await getSessionInfo(user);
+    function nowMs() { return Date.now(); }
+    function generateSessionToken() {
+      return Math.random().toString(36).substring(2) + nowMs().toString(36);
+    }
 
-        if (!srv || !srv.token) {
-          const res = await syncSession(user);
-          return res.ok ? { ok: true, mustChange: srv ? srv.mustChangePassword === true : false } : { ok: false };
-        }
+    async function getSessionInfo(user) {
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (!snap.exists()) return null;
+        const d = snap.data();
+        return {
+          token: d.sessionToken || null,
+          updatedAt: typeof d.sessionUpdatedAt === 'number' ? d.sessionUpdatedAt : null,
+          mustChangePassword: d.mustChangePassword === true
+        };
+      } catch (e) {
+        console.warn("getSessionInfo erro:", e);
+        return null;
+      }
+    }
 
-        if (!localToken) {
-          localStorage.setItem("sessionToken", srv.token);
-          localStorage.setItem("sessionUpdatedAt", String(srv.updatedAt || nowMs()));
-          return { ok: true, mustChange: srv.mustChangePassword === true };
-        }
+    async function registerSession(user, forceToken) {
+      const token = forceToken || generateSessionToken();
+      const updatedAt = nowMs();
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          tipo: "aluno",
+          sessionToken: token,
+          sessionUpdatedAt: updatedAt
+        }, { merge: true });
+        localStorage.setItem("sessionToken", token);
+        localStorage.setItem("sessionUpdatedAt", String(updatedAt));
+        return { token, updatedAt };
+      } catch (err) {
+        console.warn("Erro ao registrar sessão:", err);
+        return null;
+      }
+    }
 
-        if (srv.token === localToken) return { ok: true, mustChange: srv.mustChangePassword === true };
+    async function syncSession(user) {
+      const first = await registerSession(user);
+      if (!first) return { ok: false, reason: "register_failed" };
+      await new Promise(r => setTimeout(r, 200));
+      const srv1 = await getSessionInfo(user);
+      if (srv1 && srv1.token === first.token) return { ok: true };
+      await registerSession(user, first.token);
+      await new Promise(r => setTimeout(r, 200));
+      const srv2 = await getSessionInfo(user);
+      if (srv2 && srv2.token === first.token) return { ok: true };
+      if (srv2 && srv2.token) {
+        localStorage.setItem("sessionToken", srv2.token);
+        localStorage.setItem("sessionUpdatedAt", String(srv2.updatedAt || nowMs()));
+      }
+      return { ok: true };
+    }
 
-        const srvAt = Number(srv.updatedAt || 0);
-        const marginMs = 3000;
-        if (srvAt > localAt + marginMs) return { ok: false, concurrent: true };
-        else {
-          await registerSession(user, localToken);
-          return { ok: true, mustChange: srv.mustChangePassword === true };
-        }
-      } catch (err) {
-        console.warn("verifySession erro:", err);
-        return { ok: true };
-      }
-    }
+    async function verifySession(user) {
+      try {
+        const localToken = localStorage.getItem("sessionToken");
+        const localAt = Number(localStorage.getItem("sessionUpdatedAt") || "0");
+        const srv = await getSessionInfo(user);
 
-    function showChangePassModal(show = true) {
-      changePassModal.classList.toggle('hidden', !show);
-      changePassModal.setAttribute('aria-hidden', String(!show));
-    }
-    function showForgotModal(show = true) {
-      forgotModal.classList.toggle('hidden', !show);
-      forgotModal.setAttribute('aria-hidden', String(!show));
-    }
-    function showError(msg) {
-      loginMsg.textContent = msg;
-      loginMsg.classList.remove("hidden");
-      setTimeout(() => loginMsg.classList.add("hidden"), 6000);
-    }
+        if (!srv || !srv.token) {
+          const res = await syncSession(user);
+          return res.ok ? { ok: true, mustChange: srv ? srv.mustChangePassword === true : false } : { ok: false };
+        }
 
-    onAuthStateChanged(auth, async user => {
-      if (user) {
-        const syncOk = await syncSession(user);
-        if (!syncOk.ok) {
-          showError("Erro ao preparar sessão. Tente novamente.");
-          await signOut(auth);
-          return;
-        }
+        if (!localToken) {
+          localStorage.setItem("sessionToken", srv.token);
+          localStorage.setItem("sessionUpdatedAt", String(srv.updatedAt || nowMs()));
+          return { ok: true, mustChange: srv.mustChangePassword === true };
+        }
 
-        const check = await verifySession(user);
-        if (!check.ok && check.concurrent) {
-          const assumir = confirm("Sua conta está ativa em outro dispositivo. Deseja assumir esta sessão aqui?");
-          if (assumir) {
-            const res = await syncSession(user);
-            if (!res.ok) {
-              showError("Não consegui assumir a sessão. Tente novamente.");
-              await signOut(auth);
-              return;
-            }
-          } else {
-            await signOut(auth);
-            localStorage.removeItem("sessionToken");
-            localStorage.removeItem("sessionUpdatedAt");
-            loginOverlay.classList.remove("hidden");
-            mainContent.classList.add("hidden");
-            mainContent.classList.add("opacity-0");
-            return;
-          }
-        }
+        if (srv.token === localToken) return { ok: true, mustChange: srv.mustChangePassword === true };
 
-        try {
-          const srv = await getSessionInfo(user);
-          const mustChange = !!(srv && srv.mustChangePassword);
-          if (mustChange) {
-            mainContent.classList.add('hidden');
-            showChangePassModal(true);
-            return;
-          }
-        } catch (err) {
-          console.warn('Erro ao verificar mustChangePassword', err);
-        }
+        const srvAt = Number(srv.updatedAt || 0);
+        const marginMs = 3000;
+        if (srvAt > localAt + marginMs) return { ok: false, concurrent: true };
+        else {
+          await registerSession(user, localToken);
+          return { ok: true, mustChange: srv.mustChangePassword === true };
+        }
+      } catch (err) {
+        console.warn("verifySession erro:", err);
+        return { ok: true };
+      }
+    }
 
-        showChangePassModal(false);
-        loginOverlay.classList.add("hidden");
-        mainContent.classList.remove("hidden");
-        setTimeout(() => mainContent.classList.remove("opacity-0"), 100);
-      } else {
-        loginOverlay.classList.remove("hidden");
-        mainContent.classList.add("hidden");
-        mainContent.classList.add("opacity-0");
-      }
-    });
+    function showChangePassModal(show = true) {
+      changePassModal.classList.toggle('hidden', !show);
+      changePassModal.setAttribute('aria-hidden', String(!show));
+    }
+    function showForgotModal(show = true) {
+      forgotModal.classList.toggle('hidden', !show);
+      forgotModal.setAttribute('aria-hidden', String(!show));
+    }
+    function showError(msg) {
+      loginMsg.textContent = msg;
+      loginMsg.classList.remove("hidden");
+      setTimeout(() => loginMsg.classList.add("hidden"), 6000);
+    }
 
-    // Login handlers
-    document.getElementById("btn-login-google").onclick = async () => {
-      try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        await syncSession(result.user);
-      } catch (err) {
-        showError("Erro ao entrar com Google.");
-        console.error(err);
-      }
-    };
+    // 3. LÓGICA DO OBSERVER CORRIGIDA
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        const syncOk = await syncSession(user);
+        if (!syncOk.ok) {
+          showError("Erro ao preparar sessão. Tente novamente.");
+          await signOut(auth);
+          // Se falhar, ainda precisa mostrar o login
+          loginOverlay.classList.remove("hidden");
+          mainContent.classList.add("hidden");
+          mainContent.classList.add("opacity-0");
+          loadingSpinner?.classList.add('hidden'); // Oculta o spinner
+          return;
+        }
 
-    btnLogin.onclick = async () => {
-      btnLogin.classList.add('btn-pressed');
-      const email = document.getElementById("email").value.trim();
-      const pass  = document.getElementById("password").value;
-      if (!email || !pass) {
-        showError("Preencha os campos.");
-        btnLogin.classList.remove('btn-pressed');
-        return;
-      }
-      try {
-        const result = await signInWithEmailAndPassword(auth, email, pass);
-        await syncSession(result.user);
-      } catch (err) {
-        showError("E-mail ou senha inválidos.");
-        console.error(err);
-      } finally {
-        setTimeout(() => btnLogin.classList.remove('btn-pressed'), 600);
-      }
-    };
+        const check = await verifySession(user);
+        if (!check.ok && check.concurrent) {
+          const assumir = confirm("Sua conta está ativa em outro dispositivo. Deseja assumir esta sessão aqui?");
+          if (assumir) {
+            const res = await syncSession(user);
+            if (!res.ok) {
+              showError("Não consegui assumir a sessão. Tente novamente.");
+              await signOut(auth);
+              loginOverlay.classList.remove("hidden");
+              mainContent.classList.add("hidden");
+              mainContent.classList.add("opacity-0");
+              loadingSpinner?.classList.add('hidden'); // Oculta o spinner
+              return;
+            }
+          } else {
+            await signOut(auth);
+            localStorage.removeItem("sessionToken");
+            localStorage.removeItem("sessionUpdatedAt");
+            loginOverlay.classList.remove("hidden");
+            mainContent.classList.add("hidden");
+            mainContent.classList.add("opacity-0");
+            loadingSpinner?.classList.add('hidden'); // Oculta o spinner
+            return;
+          }
+        }
 
-    // Logout
-    const btnLogoutMain = document.getElementById('btn-logout');
-    if (btnLogoutMain) {
-      btnLogoutMain.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        try {
-          if (user) {
-            await setDoc(doc(db, "users", user.uid), { sessionToken: null, sessionUpdatedAt: null }, { merge: true });
-          }
-          await signOut(auth);
-        } catch (err) {
-          console.warn('Erro no logout:', err);
-        } finally {
-          localStorage.removeItem("sessionToken");
-          localStorage.removeItem("sessionUpdatedAt");
-          loginOverlay.classList.remove('hidden');
-          mainContent.classList.add('hidden');
-          mainContent.classList.add('opacity-0');
-        }
-      });
-    }
+        try {
+          const srv = await getSessionInfo(user);
+          const mustChange = !!(srv && srv.mustChangePassword);
+          if (mustChange) {
+            mainContent.classList.add('hidden');
+            showChangePassModal(true);
+            loadingSpinner?.classList.add('hidden'); // Oculta o spinner
+            return;
+          }
+        } catch (err) {
+          console.warn('Erro ao verificar mustChangePassword', err);
+        }
 
-    // Trocar senha
-    btnChangePass.addEventListener('click', async () => {
-      changePassMsg.classList.add('hidden');
-      const newPass = newPassInput.value.trim();
-      const confirm = confirmPassInput.value.trim();
+        // USUÁRIO LOGADO, MOSTRAR CONTEÚDO PRINCIPAL
+        showChangePassModal(false);
+        loginOverlay.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+        setTimeout(() => mainContent.classList.remove("opacity-0"), 100);
+      } else {
+        // USUÁRIO DESLOGADO, MOSTRAR LOGIN
+        loginOverlay.classList.remove("hidden");
+        mainContent.classList.add("hidden");
+        mainContent.classList.add("opacity-0");
+      }
+      
+      // NOVO: Esconde o spinner APÓS a verificação completa (corrigindo o flicker)
+      loadingSpinner?.classList.add('hidden');
+    });
 
-      if (!newPass || newPass.length < 6) {
-        changePassMsg.textContent = 'Senha deve ter ao menos 6 caracteres.';
-        changePassMsg.classList.remove('hidden');
-        return;
-      }
-      if (newPass !== confirm) {
-        changePassMsg.textContent = 'As senhas não coincidem.';
-        changePassMsg.classList.remove('hidden');
-        return;
-      }
+    // Login handlers
+    document.getElementById("btn-login-google").onclick = async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        await syncSession(result.user);
+      } catch (err) {
+        showError("Erro ao entrar com Google.");
+        console.error(err);
+      }
+    };
 
-      try {
-        const user = auth.currentUser;
-        if (!user) throw new Error('Usuário não autenticado.');
-        await updatePassword(user, newPass);
-        await setDoc(doc(db, 'users', user.uid), { mustChangePassword: false }, { merge: true });
-        showChangePassModal(false);
-        loginOverlay.classList.add('hidden');
-        mainContent.classList.remove('hidden');
-        setTimeout(() => mainContent.classList.remove('opacity-0'), 100);
-      } catch (err) {
-        console.error('Erro ao alterar senha:', err);
-        if (err && err.code === 'auth/requires-recent-login') {
-          try {
-            const user = auth.currentUser;
-            const email = user.email;
-            const currentPass = prompt('Insira sua senha atual para confirmar (senha provisória):');
-            if (!currentPass) throw new Error('Reautenticação cancelada.');
-            const cred = EmailAuthProvider.credential(email, currentPass);
-            await reauthenticateWithCredential(user, cred);
-            await updatePassword(user, newPass);
-            await setDoc(doc(db, 'users', user.uid), { mustChangePassword: false }, { merge: true });
-            showChangePassModal(false);
-            loginOverlay.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-            setTimeout(() => mainContent.classList.remove('opacity-0'), 100);
-          } catch (reauthErr) {
-            console.error('Erro na reautenticação:', reauthErr);
-            changePassMsg.textContent = 'Não foi possível alterar a senha. Faça login novamente e tente.';
-            changePassMsg.classList.remove('hidden');
-          }
-        } else {
-          changePassMsg.textContent = 'Erro ao alterar senha. Tente novamente.';
-          changePassMsg.classList.remove('hidden');
-        }
-      }
-    });
+    btnLogin.onclick = async () => {
+      btnLogin.classList.add('btn-pressed');
+      const email = document.getElementById("email").value.trim();
+      const pass  = document.getElementById("password").value;
+      if (!email || !pass) {
+        showError("Preencha os campos.");
+        btnLogin.classList.remove('btn-pressed');
+        return;
+      }
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, pass);
+        await syncSession(result.user);
+      } catch (err) {
+        showError("E-mail ou senha inválidos.");
+        console.error(err);
+      } finally {
+        setTimeout(() => btnLogin.classList.remove('btn-pressed'), 600);
+      }
+    };
 
-    // Esqueci a senha
-    btnForgot.addEventListener('click', (e) => {
-      e.preventDefault();
-      forgotEmail.value = document.getElementById('email').value || '';
-      forgotMsg.classList.add('hidden');
-      showForgotModal(true);
-    });
+    // Logout
+    const btnLogoutMain = document.getElementById('btn-logout');
+    if (btnLogoutMain) {
+      btnLogoutMain.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        try {
+          if (user) {
+            await setDoc(doc(db, "users", user.uid), { sessionToken: null, sessionUpdatedAt: null }, { merge: true });
+          }
+          await signOut(auth);
+        } catch (err) {
+          console.warn('Erro no logout:', err);
+        } finally {
+          localStorage.removeItem("sessionToken");
+          localStorage.removeItem("sessionUpdatedAt");
+          loginOverlay.classList.remove('hidden');
+          mainContent.classList.add('hidden');
+          mainContent.classList.add('opacity-0');
+        }
+      });
+    }
 
-    btnSendReset.addEventListener('click', async () => {
-      const email = forgotEmail.value.trim();
-      forgotMsg.classList.add('hidden');
-      if (!email) {
-        forgotMsg.textContent = 'Informe o e-mail.';
-        forgotMsg.classList.remove('hidden');
-        forgotMsg.classList.remove('text-success');
-        forgotMsg.classList.add('text-error');
-        return;
-      }
-      try {
-        await sendPasswordResetEmail(auth, email);
-        forgotMsg.textContent = 'E-mail de redefinição enviado. Verifique sua caixa de entrada.';
-        forgotMsg.classList.remove('hidden');
-        forgotMsg.classList.remove('text-error');
-        forgotMsg.classList.add('text-success');
-        setTimeout(() => showForgotModal(false), 2500);
-      } catch (err) {
-        console.error('Erro ao enviar reset:', err);
-        forgotMsg.textContent = 'Erro ao enviar e-mail. Verifique o e-mail informado.';
-        forgotMsg.classList.remove('hidden');
-        forgotMsg.classList.remove('text-success');
-        forgotMsg.classList.add('text-error');
-      }
-    });
+    // Trocar senha
+    btnChangePass.addEventListener('click', async () => {
+      changePassMsg.classList.add('hidden');
+      const newPass = newPassInput.value.trim();
+      const confirm = confirmPassInput.value.trim();
 
-    // Fechar modais clicando fora
-    changePassModal.addEventListener('click', (e) => { if (e.target === changePassModal) showChangePassModal(false); });
-    forgotModal.addEventListener('click', (e) => { if (e.target === forgotModal) showForgotModal(false); });
-  </script>
+      if (!newPass || newPass.length < 6) {
+        changePassMsg.textContent = 'Senha deve ter ao menos 6 caracteres.';
+        changePassMsg.classList.remove('hidden');
+        return;
+      }
+      if (newPass !== confirm) {
+        changePassMsg.textContent = 'As senhas não coincidem.';
+        changePassMsg.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error('Usuário não autenticado.');
+        await updatePassword(user, newPass);
+        await setDoc(doc(db, 'users', user.uid), { mustChangePassword: false }, { merge: true });
+        showChangePassModal(false);
+        loginOverlay.classList.add('hidden');
+        mainContent.classList.remove('hidden');
+        setTimeout(() => mainContent.classList.remove('opacity-0'), 100);
+      } catch (err) {
+        console.error('Erro ao alterar senha:', err);
+        if (err && err.code === 'auth/requires-recent-login') {
+          try {
+            const user = auth.currentUser;
+            const email = user.email;
+            const currentPass = prompt('Insira sua senha atual para confirmar (senha provisória):');
+            if (!currentPass) throw new Error('Reautenticação cancelada.');
+            const cred = EmailAuthProvider.credential(email, currentPass);
+            await reauthenticateWithCredential(user, cred);
+            await updatePassword(user, newPass);
+            await setDoc(doc(db, 'users', user.uid), { mustChangePassword: false }, { merge: true });
+            showChangePassModal(false);
+            loginOverlay.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            setTimeout(() => mainContent.classList.remove('opacity-0'), 100);
+          } catch (reauthErr) {
+            console.error('Erro na reautenticação:', reauthErr);
+            changePassMsg.textContent = 'Não foi possível alterar a senha. Faça login novamente e tente.';
+            changePassMsg.classList.remove('hidden');
+          }
+        } else {
+          changePassMsg.textContent = 'Erro ao alterar senha. Tente novamente.';
+          changePassMsg.classList.remove('hidden');
+        }
+      }
+    });
+
+    // Esqueci a senha
+    btnForgot.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotEmail.value = document.getElementById('email').value || '';
+      forgotMsg.classList.add('hidden');
+      showForgotModal(true);
+    });
+
+    btnSendReset.addEventListener('click', async () => {
+      const email = forgotEmail.value.trim();
+      forgotMsg.classList.add('hidden');
+      if (!email) {
+        forgotMsg.textContent = 'Informe o e-mail.';
+        forgotMsg.classList.remove('hidden');
+        forgotMsg.classList.remove('text-success');
+        forgotMsg.classList.add('text-error');
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        forgotMsg.textContent = 'E-mail de redefinição enviado. Verifique sua caixa de entrada.';
+        forgotMsg.classList.remove('hidden');
+        forgotMsg.classList.remove('text-error');
+        forgotMsg.classList.add('text-success');
+        setTimeout(() => showForgotModal(false), 2500);
+      } catch (err) {
+        console.error('Erro ao enviar reset:', err);
+        forgotMsg.textContent = 'Erro ao enviar e-mail. Verifique o e-mail informado.';
+        forgotMsg.classList.remove('hidden');
+        forgotMsg.classList.remove('text-success');
+        forgotMsg.classList.add('text-error');
+      }
+    });
+
+    // Fechar modais clicando fora
+    changePassModal.addEventListener('click', (e) => { if (e.target === changePassModal) showChangePassModal(false); });
+    forgotModal.addEventListener('click', (e) => { if (e.target === forgotModal) showForgotModal(false); });
+  </script>
 </body>
 </html>
-
