@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LIBRAS - Curso Online</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       /* Paleta igual ao arquivo Associacao */
@@ -18,11 +18,58 @@
 
     html, body { height:100%; margin:0; }
     body {
-      font-family: 'Open Sans', sans-serif;
+      font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--jw-background);
       color: var(--jw-dark);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Cabeçalho escuro, alinhado às páginas de treino */
+    .site-header {
+      background-color: var(--jw-dark);
+      color: #fff;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-title {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: .02em;
+    }
+    .site-title span {
+      font-style: italic;
+      font-weight: 600;
+      opacity: .9;
+    }
+    .header-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .sidebar-toggle {
+      background: var(--jw-green);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .btn-logout {
+      background: var(--jw-red);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
     }
 
     /* Login overlay */
@@ -45,14 +92,19 @@
     /* Layout principal */
     .app-shell { display:flex; gap:24px; max-width:1200px; margin:0 auto; padding:24px; }
     .sidebar {
-      width:240px; background:#fff; border:1px solid var(--card-border);
+      width:260px; background:#fff; border:1px solid var(--card-border);
       border-radius:10px; padding:12px;
     }
-    .sidebar h4 { font-weight:700; margin:0 0 6px 0; }
+    .sidebar h4 { font-weight:700; margin:8px 0; color:var(--jw-dark); }
     .sidebar ul { list-style:none; padding:0; margin:0 0 12px 0; }
     .sidebar li { margin:6px 0; }
-    .sidebar a { display:block; padding:8px; border-radius:8px; font-weight:600; color:var(--jw-dark); text-decoration:none; }
-    .sidebar a:hover { background:rgba(68,157,68,0.08); color:var(--jw-green); }
+    .sidebar a {
+      display:block; padding:8px; border-radius:8px;
+      font-weight:700; /* negrito nas abas */
+      color:var(--jw-dark); text-decoration:none;
+    }
+    .sidebar a:hover { background:rgba(68,157,68,0.10); color:var(--jw-green); }
+
     .content-area { flex:1; }
 
     /* Cards centrais */
@@ -63,7 +115,7 @@
     }
     .tool-card:hover { transform: translateY(-6px); box-shadow:0 12px 30px rgba(2,6,23,0.06); }
     .tool-card img { width:100%; max-width:260px; height:140px; object-fit:contain; border-radius:8px; }
-    .tool-title { font-weight:600; color:var(--jw-dark); }
+    .tool-title { font-weight:700; color:var(--jw-dark); }
 
     /* Footer */
     footer { color:#94a3b8; padding:24px; text-align:center; }
@@ -80,7 +132,7 @@
     /* Responsivo */
     @media (max-width:900px) {
       .app-shell { padding:12px; flex-direction:column; }
-      .sidebar { width:100%; }
+      .sidebar { display:none; width:100%; }
       .tool-card img { max-width:100%; height:120px; }
     }
   </style>
@@ -100,7 +152,7 @@
         <input type="password" id="password" class="input" autocomplete="current-password">
         <button id="btn-login-email" class="btn-login" type="button">ENTRAR</button>
 
-        <!-- Google centralizado -->
+        <!-- Google centralizado (sem Apple) -->
         <div class="mt-6 flex justify-center">
           <button id="btn-login-google" class="btn-ghost flex items-center justify-center text-sm">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 mr-2" alt=""> Google
@@ -118,10 +170,13 @@
 
   <!-- CONTEÚDO PRINCIPAL -->
   <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 ease-in">
-    <nav class="flex justify-between items-center py-6 px-6 max-w-6xl mx-auto w-full">
-      <div class="text-2xl font-light tracking-wider" style="color:var(--jw-dark)">LIBRAS</div>
-      <button id="btn-logout" class="text-sm px-3 py-1 rounded" style="background:var(--jw-red);color:#fff;">Sair</button>
-    </nav>
+    <header class="site-header">
+      <div class="site-title">LIBRAS — <span>Sessões de Treino</span></div>
+      <div class="header-actions">
+        <button id="sidebar-toggle" class="sidebar-toggle" aria-controls="app-sidebar" aria-expanded="false">Menu</button>
+        <button id="btn-logout" class="btn-logout">Sair</button>
+      </div>
+    </header>
 
     <div class="app-shell">
       <!-- SIDEBAR com itens solicitados -->
@@ -235,6 +290,28 @@
     const newPassInput = document.getElementById('new-password');
     const confirmPassInput = document.getElementById('confirm-password');
     const changePassMsg = document.getElementById('change-pass-msg');
+
+    // Sidebar toggle (mobile)
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const appSidebar = document.getElementById('app-sidebar');
+
+    function updateSidebarVisibility() {
+      const isMobile = window.innerWidth <= 900;
+      if (isMobile) {
+        appSidebar.style.display = 'none';
+        sidebarToggle?.setAttribute('aria-expanded', 'false');
+      } else {
+        appSidebar.style.display = 'block';
+        sidebarToggle?.setAttribute('aria-expanded', 'true');
+      }
+    }
+    updateSidebarVisibility();
+    window.addEventListener('resize', updateSidebarVisibility);
+    sidebarToggle?.addEventListener('click', () => {
+      const visible = appSidebar.style.display !== 'none';
+      appSidebar.style.display = visible ? 'none' : 'block';
+      sidebarToggle.setAttribute('aria-expanded', visible ? 'false' : 'true');
+    });
 
     /* ========= Sessão única robusta ========= */
 
