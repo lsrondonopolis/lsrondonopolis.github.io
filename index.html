@@ -236,7 +236,7 @@
     const confirmPassInput = document.getElementById('confirm-password');
     const changePassMsg = document.getElementById('change-pass-msg');
 
-    // Sessão única
+    // Sessão única com “assumir sessão” para evitar falso positivo
     function generateSessionToken() {
       return Math.random().toString(36).substring(2) + Date.now().toString(36);
     }
@@ -245,7 +245,12 @@
       const token = generateSessionToken();
       const ref = doc(db, "users", user.uid);
       try {
-        await setDoc(ref, { email: user.email, tipo: "aluno", sessionToken: token }, { merge: true });
+        await setDoc(ref, {
+          email: user.email,
+          tipo: "aluno",
+          sessionToken: token,
+          sessionUpdatedAt: Date.now()
+        }, { merge: true });
         localStorage.setItem("sessionToken", token);
         return token;
       } catch (err) {
@@ -260,27 +265,31 @@
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
 
+        // Documento ausente ou sem token: registrar agora
         if (!snap.exists()) {
           await registerSession(user);
-          return true;
+          return { ok: true };
         }
-
-        const server = snap.data().sessionToken || null;
+        const data = snap.data();
+        const server = data.sessionToken || null;
 
         if (!server) {
           await registerSession(user);
-          return true;
+          return { ok: true };
         }
-
         if (!local) {
           await registerSession(user);
-          return true;
+          return { ok: true };
         }
-
-        return server === local;
+        if (server === local) {
+          return { ok: true };
+        }
+        // Tokens diferentes: possível sessão concorrente
+        return { ok: false, serverToken: server, localToken: local };
       } catch (err) {
         console.warn("Erro em verifySession:", err);
-        return true;
+        // Em caso de erro, não travar o login
+        return { ok: true };
       }
     }
 
@@ -299,10 +308,10 @@
       setTimeout(() => loginMsg.classList.add("hidden"), 6000);
     }
 
-    // Auth state
+    // Auth state com ordem corrigida e “assumir sessão”
     onAuthStateChanged(auth, async user => {
       if (user) {
-        // 1) Garante token local (evita falso positivo)
+        // 1) Garante token local/servidor
         if (!localStorage.getItem("sessionToken")) {
           const token = await registerSession(user);
           if (!token) {
@@ -312,16 +321,25 @@
           }
         }
 
-        // 2) Verifica conflito real de sessão
-        const ok = await verifySession(user);
-        if (!ok) {
-          alert("Sua conta foi acessada em outro dispositivo. Você será desconectado.");
-          try { await signOut(auth); } catch(e){ console.warn(e); }
-          localStorage.removeItem("sessionToken");
-          loginOverlay.classList.remove("hidden");
-          mainContent.classList.add("hidden");
-          mainContent.classList.add("opacity-0");
-          return;
+        // 2) Verifica conflito
+        const check = await verifySession(user);
+        if (!check.ok) {
+          const assumir = confirm("Sua conta está ativa em outro dispositivo. Deseja assumir esta sessão aqui?");
+          if (assumir) {
+            const token = await registerSession(user); // sobrescreve servidor com o novo token local
+            if (!token) {
+              showError("Não consegui assumir a sessão. Tente novamente.");
+              await signOut(auth);
+              return;
+            }
+          } else {
+            await signOut(auth);
+            localStorage.removeItem("sessionToken");
+            loginOverlay.classList.remove("hidden");
+            mainContent.classList.add("hidden");
+            mainContent.classList.add("opacity-0");
+            return;
+          }
         }
 
         // 3) Força troca de senha se necessário
@@ -383,16 +401,14 @@
       }
     };
 
-    // Logout
+    // Logout (limpa token servidor)
     const btnLogoutMain = document.getElementById('btn-logout');
     if (btnLogoutMain) {
       btnLogoutMain.addEventListener('click', async () => {
         const user = auth.currentUser;
         try {
-          // limpa token server
           if (user) {
-            const ref = doc(db, "users", user.uid);
-            await setDoc(ref, { sessionToken: null }, { merge: true });
+            await setDoc(doc(db, "users", user.uid), { sessionToken: null, sessionUpdatedAt: null }, { merge: true });
           }
           await signOut(auth);
         } catch (err) {
